@@ -1,12 +1,13 @@
 from datetime import datetime
-from flask import render_template, flash, redirect, url_for, request, g
+from flask import render_template, flash, redirect, url_for, request, g, jsonify
 from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.urls import url_parse
 from flask_babel import _, get_locale
 from app import app, db
-from app.forms import LoginForm, RegistrationForm, EditProfileForm, PostForm, \
-    ResetPasswordRequestForm, ResetPasswordForm
-from app.models import User, Post
+from app.forms import LoginForm, RegistrationForm, EditProfileForm, \
+    ResetPasswordRequestForm, ResetPasswordForm, AddProductForm, SearchProductForm, \
+    ProductDetailForm, ReviewForm, OrderForm, CartContentForm, CheckoutForm
+from app.models import User, Product, Orders, Cart, Coupons
 from app.email import send_password_reset_email
 
 
@@ -18,42 +19,22 @@ def before_request():
     g.locale = str(get_locale())
 
 
-@app.route('/', methods=['GET', 'POST'])
-@app.route('/index', methods=['GET', 'POST'])
+@app.route('/', methods=['GET'])
+@app.route('/index', methods=['GET'])
 @login_required
 def index():
-    form = PostForm()
-    if form.validate_on_submit():
-        post = Post(body=form.post.data, author=current_user)
-        db.session.add(post)
-        db.session.commit()
-        flash(_('Your post is now live!'))
-        return redirect(url_for('index'))
-    page = request.args.get('page', 1, type=int)
-    posts = current_user.followed_posts().paginate(
-        page=page, per_page=app.config["POSTS_PER_PAGE"], error_out=False)
-    next_url = url_for(
-        'index', page=posts.next_num) if posts.next_num else None
-    prev_url = url_for(
-        'index', page=posts.prev_num) if posts.prev_num else None
-    return render_template('index.html.j2', title=_('Home'), form=form,
-                           posts=posts.items, next_url=next_url,
-                           prev_url=prev_url)
+    return render_template('index.html.j2', title=_('Home'))
 
 
-@app.route('/explore')
+@app.route('/products', methods=['GET'])
 @login_required
-def explore():
+def list_products():
     page = request.args.get('page', 1, type=int)
-    posts = Post.query.order_by(Post.timestamp.desc()).paginate(
-        page=page, per_page=app.config["POSTS_PER_PAGE"], error_out=False)
-    next_url = url_for(
-        'explore', page=posts.next_num) if posts.next_num else None
-    prev_url = url_for(
-        'explore', page=posts.prev_num) if posts.prev_num else None
-    return render_template('index.html.j2', title=_('Explore'),
-                           posts=posts.items, next_url=next_url,
-                           prev_url=prev_url)
+    products = Product.query.paginate(page=page, per_page=app.config["PRODUCTS_PER_PAGE"], error_out=False)
+    next_url = url_for('list_products', page=products.next_num) if products.next_num else None
+    prev_url = url_for('list_products', page=products.prev_num) if products.prev_num else None
+    return render_template('products.html.j2', title=_('Products'), products=products.items,
+                           next_url=next_url, prev_url=prev_url)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -104,11 +85,9 @@ def reset_password_request():
         user = User.query.filter_by(email=form.email.data).first()
         if user:
             send_password_reset_email(user)
-        flash(
-            _('Check your email for the instructions to reset your password'))
+        flash(_('Check your email for the instructions to reset your password'))
         return redirect(url_for('login'))
-    return render_template('reset_password_request.html.j2',
-                           title=_('Reset Password'), form=form)
+    return render_template('reset_password_request.html.j2', title=_('Reset Password'), form=form)
 
 
 @app.route('/reset_password/<token>', methods=['GET', 'POST'])
@@ -134,10 +113,8 @@ def user(username):
     page = request.args.get('page', 1, type=int)
     posts = user.followed_posts().paginate(
         page=page, per_page=app.config["POSTS_PER_PAGE"], error_out=False)
-    next_url = url_for(
-        'index', page=posts.next_num) if posts.next_num else None
-    prev_url = url_for(
-        'index', page=posts.prev_num) if posts.prev_num else None
+    next_url = url_for('user', username=user.username, page=posts.next_num) if posts.next_num else None
+    prev_url = url_for('user', username=user.username, page=posts.prev_num) if posts.prev_num else None
     return render_template('user.html.j2', user=user, posts=posts.items,
                            next_url=next_url, prev_url=prev_url)
 
@@ -155,37 +132,55 @@ def edit_profile():
     elif request.method == 'GET':
         form.username.data = current_user.username
         form.about_me.data = current_user.about_me
-    return render_template('edit_profile.html.j2', title=_('Edit Profile'),
-                           form=form)
+    return render_template('edit_profile.html.j2', title=_('Edit Profile'), form=form)
 
 
-@app.route('/follow/<username>')
+@app.route('/order', methods=['POST'])
 @login_required
-def follow(username):
-    user = User.query.filter_by(username=username).first()
-    if user is None:
-        flash(_('User %(username)s not found.', username=username))
-        return redirect(url_for('index'))
-    if user == current_user:
-        flash(_('You cannot follow yourself!'))
-        return redirect(url_for('user', username=username))
-    current_user.follow(user)
+def create_order():
+    data = request.json
+    order = Orders(user_id=current_user.id, status='Pending', total_price=data['total_price'])
+    db.session.add(order)
     db.session.commit()
-    flash(_('You are following %(username)s!', username=username))
-    return redirect(url_for('user', username=username))
+    return jsonify({'message': _('Order created successfully'), 'order_id': order.id}), 201
 
 
-@app.route('/unfollow/<username>')
+@app.route('/cart', methods=['GET'])
 @login_required
-def unfollow(username):
-    user = User.query.filter_by(username=username).first()
-    if user is None:
-        flash(_('User %(username)s not found.', username=username))
-        return redirect(url_for('index'))
-    if user == current_user:
-        flash(_('You cannot unfollow yourself!'))
-        return redirect(url_for('user', username=username))
-    current_user.unfollow(user)
+def view_cart():
+    cart_items = Cart.query.filter_by(user_id=current_user.id).all()
+    return render_template('cart.html.j2', title=_('Your Cart'), cart_items=cart_items)
+
+
+@app.route('/cart/add/<int:product_id>', methods=['POST'])
+@login_required
+def add_to_cart(product_id):
+    cart_item = Cart.query.filter_by(user_id=current_user.id, product_id=product_id).first()
+    if cart_item:
+        cart_item.quantity += 1
+    else:
+        cart_item = Cart(user_id=current_user.id, product_id=product_id, quantity=1)
+        db.session.add(cart_item)
     db.session.commit()
-    flash(_('You are not following %(username)s.', username=username))
-    return redirect(url_for('user', username=username))
+    flash(_('Product added to cart'))
+    return redirect(url_for('view_cart'))
+
+
+@app.route('/cart/remove/<int:product_id>', methods=['POST'])
+@login_required
+def remove_from_cart(product_id):
+    cart_item = Cart.query.filter_by(user_id=current_user.id, product_id=product_id).first()
+    if cart_item:
+        db.session.delete(cart_item)
+        db.session.commit()
+        flash(_('Product removed from cart'))
+    return redirect(url_for('view_cart'))
+
+
+@app.route('/coupons/<string:code>', methods=['GET'])
+@login_required
+def check_coupon(code):
+    coupon = Coupons.get_coupon_by_code(code)
+    if coupon and coupon.is_valid():
+        return jsonify({'valid': True, 'discount': coupon.discount})
+    return jsonify({'valid': False}), 404
