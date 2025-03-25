@@ -94,7 +94,14 @@ class Post(db.Model):
 class Payment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     payment = db.Column(db.String(140))
+    logo = db.Column(db.String(200))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     def __repr__(self) -> str:
         return f'<Payment {self.payment}>'
+    
+##class Order(db.Model):
+##    id = db.Column(db.Integer, primary_key=True)
+##    date = db.Column(db.Datetime, index=True, default=datetime.utcnow)
+##    # items = db.Column(db.String, db.ForeignKey('product.name'))
+##    cost = db.Column(db.Float(9))

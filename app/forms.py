@@ -69,5 +69,6 @@ class PostForm(FlaskForm):
     submit = SubmitField(_l('Submit'))
 
 class PaymentForm(FlaskForm):
-    payment = StringField(_l('What payment would you use'), validators=[DataRequired()])
+    payment = StringField(_l('enter the name of payment in here'), validators=[DataRequired()])
+    logo = StringField(_l('paste the image link in here'), validators=[DataRequired()])
     submit = SubmitField(_l('Submit'))

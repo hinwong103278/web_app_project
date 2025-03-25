@@ -9,10 +9,13 @@ db.create_all()
 
 u1 = User(username='john', email='john@example.com')
 u2 = User(username='susan', email='susan@example.com')
+u3 = User(username='Admin', email='admin@admin.com')
 u1.set_password("P@ssw0rd")
 u2.set_password("P@ssw0rd")
+u3.set_password("admin")
 db.session.add(u1)
 db.session.add(u2)
+db.session.add(u3)
 u1.follow(u2)
 u2.follow(u1)
 

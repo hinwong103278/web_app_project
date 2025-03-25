@@ -191,15 +191,15 @@ def unfollow(username):
     return redirect(url_for('user', username=username))
 
 
-@app.route('/Payment', methods=['GET', 'POST'])
+@app.route('/set Payment', methods=['GET', 'POST'])
 @login_required
 def payment():
     form = PaymentForm()
     if form.validate_on_submit():
-        payments = Payment(payment=form.payment.data, author=current_user)
+        payments = Payment(payment=form.payment.data, logo=form.logo.data)
         db.session.add(payments)
         db.session.commit()
         flash(_('Your changes have been saved.'))
         return redirect(url_for('payment'))
-    return render_template('payment.html.j2', title=_('payment'),
+    return render_template('setpayment.html.j2', title=_('payment'),
                            form=form, user=user)
