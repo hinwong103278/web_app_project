@@ -72,3 +72,11 @@ class PaymentForm(FlaskForm):
     payment = StringField(_l('enter the name of payment in here'), validators=[DataRequired()])
     logo = StringField(_l('paste the image link in here'), validators=[DataRequired()])
     submit = SubmitField(_l('Submit'))
+
+class ShippingAddressesForm(FlaskForm):
+    SAddress = StringField(_l('enter the address in here'), validators=[DataRequired()])
+    submit = SubmitField(_l('Submit'))
+
+class UserAddressForm(FlaskForm):
+    UAddress = StringField(_l('enter the address in here'), validators=[DataRequired()])
+    submit = SubmitField(_l('Submit'))

@@ -26,7 +26,10 @@
     {% block payment %}
         {% if current_user.username == "Admin"%}
             <li>
-                <a href="{{ url_for('payment') }}">{{ _('payment') }}</a>
+                <a href="{{ url_for('payment') }}">{{ _('setpayment') }}</a>
+            </li>
+            <li>
+                <a href="{{ url_for('shippingAddress') }}">{{ _('setshippingAddress') }}</a>
             </li>
         {% endif %}
     {% endblock %}

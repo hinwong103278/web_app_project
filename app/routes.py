@@ -5,8 +5,9 @@ from werkzeug.urls import url_parse
 from flask_babel import _, get_locale
 from app import app, db
 from app.forms import LoginForm, RegistrationForm, EditProfileForm, PostForm, \
-    ResetPasswordRequestForm, ResetPasswordForm, PaymentForm
-from app.models import User, Post, Payment
+    ResetPasswordRequestForm, ResetPasswordForm, PaymentForm, ShippingAddressesForm, \
+    UserAddressForm
+from app.models import User, Post, Payment, ShippingAddresses
 from app.email import send_password_reset_email
 
 
@@ -200,6 +201,32 @@ def payment():
         db.session.add(payments)
         db.session.commit()
         flash(_('Your changes have been saved.'))
-        return redirect(url_for('payment'))
+        return redirect(url_for('index'))
     return render_template('setpayment.html.j2', title=_('payment'),
+                           form=form, user=user)
+
+@app.route('/set shippingAddress', methods=['GET', 'POST'])
+@login_required
+def shippingAddress():
+    form = ShippingAddressesForm()
+    if form.validate_on_submit():
+        SAddress = ShippingAddresses(SAddress=form.SAddress.data)
+        db.session.add(SAddress)
+        db.session.commit()
+        flash(_('Your changes have been saved.'))
+        return redirect(url_for('index'))
+    return render_template('setshippingAddress.html.j2', title=_('shippingAddress'),
+                           form=form)
+
+@app.route('/set userAddress', methods=['GET', 'POST'])
+@login_required
+def userAddress():
+    form = UserAddressForm()
+    if form.validate_on_submit():
+        UAddress = ShippingAddresses(UAddress=form.UAddress.data, author=current_user)
+        db.session.add(UAddress)
+        db.session.commit()
+        flash(_('Your changes have been saved.'))
+        return redirect(url_for('index'))
+    return render_template('setuserAddress.html.j2', title=_('userAddress'),
                            form=form, user=user)

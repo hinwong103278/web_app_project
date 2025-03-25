@@ -30,6 +30,8 @@ class User(UserMixin, db.Model):
         secondaryjoin=(followers.c.followed_id == id),
         backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
     payments = db.relationship('Payment', backref='author', lazy='dynamic')
+    useraddress = db.relationship('ShippingAddresses', backref='author', lazy='dynamic')
+    wishitems = db.relationship('Wishlist', backref='author', lazy='dynamic')
 
     def __repr__(self) -> str:
         return f'<User {self.username}>'
@@ -95,6 +97,8 @@ class Payment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     payment = db.Column(db.String(140))
     logo = db.Column(db.String(200))
+    cardnumber = db.Column(db.Integer)
+    carddate = db.Column(db.DateTime, index=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     def __repr__(self) -> str:
@@ -105,3 +109,22 @@ class Payment(db.Model):
 ##    date = db.Column(db.Datetime, index=True, default=datetime.utcnow)
 ##    # items = db.Column(db.String, db.ForeignKey('product.name'))
 ##    cost = db.Column(db.Float(9))
+
+class ShippingAddresses(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    SAddress = db.Column(db.String(140))
+    UAddress = db.Column(db.String(140))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+
+    def __repr__(self) -> str:
+        return f'<shippingAddresses {self.Address}>'
+
+class Wishlist(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    wishitem =  db.Column(db.String(140))
+    #product_id = db.Column(db.Integer, db.ForeignKey(''))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    def __repr__(self) -> str:
+        return f'<Wishlist {self.wishitem}>'
