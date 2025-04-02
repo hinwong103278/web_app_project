@@ -6,8 +6,9 @@ from flask_babel import _, get_locale
 from app import app, db
 from app.forms import LoginForm, RegistrationForm, EditProfileForm, PostForm, \
     ResetPasswordRequestForm, ResetPasswordForm, PaymentForm, ShippingAddressesForm, \
-    UserAddressForm
-from app.models import User, Post, Payment, ShippingAddresses
+    UserAddressForm, ProductForm, BrandForm, CategoryForm, ProductReviewForm, \
+    OrderDetailsForm, OrderStatusForm
+from app.models import User, Post, Payment, ShippingAddresses, Product, Brand, Category, ProductReview, OrderDetails, OrderStatus
 from app.email import send_password_reset_email
 
 
@@ -229,4 +230,82 @@ def userAddress():
         flash(_('Your changes have been saved.'))
         return redirect(url_for('index'))
     return render_template('setuserAddress.html.j2', title=_('userAddress'),
+                           form=form, user=user)
+
+@app.route('/set_product', methods=['GET', 'POST'])
+@login_required
+def set_product():
+    form = ProductForm()
+    if form.validate_on_submit():
+        product = Product(name=form.name.data)
+        db.session.add(product)
+        db.session.commit()
+        flash(_('Your changes have been saved.'))
+        return redirect(url_for('index'))
+    return render_template('set_product.html.j2', title=_('product'),
+                           form=form, user=user)
+
+@app.route('/set_brand', methods=['GET', 'POST'])
+@login_required
+def set_brand():
+    form = BrandForm()
+    if form.validate_on_submit():
+        brand = Brand(name=form.name.data)
+        db.session.add(brand)
+        db.session.commit()
+        flash(_('Your changes have been saved.'))
+        return redirect(url_for('index'))
+    return render_template('set_brand.html.j2', title=_('brand'),
+                           form=form, user=user)
+
+@app.route('/set_category', methods=['GET', 'POST'])
+@login_required
+def set_category():
+    form = CategoryForm()
+    if form.validate_on_submit():
+        category = Category(name=form.name.data)
+        db.session.add(category)
+        db.session.commit()
+        flash(_('Your changes have been saved.'))
+        return redirect(url_for('index'))
+    return render_template('set_category.html.j2', title=_('category'),
+                           form=form, user=user)
+
+@app.route('/set_productReview', methods=['GET', 'POST'])
+@login_required
+def set_productReview():
+    form = ProductReviewForm()
+    if form.validate_on_submit():
+        productReview = ProductReview(name=form.name.data)
+        db.session.add(productReview)
+        db.session.commit()
+        flash(_('Your changes have been saved.'))
+        return redirect(url_for('index'))
+    return render_template('set_producteview.html.j2', title=_('productReview'),
+                           form=form, user=user)
+
+@app.route('/set_orderdetails', methods=['GET', 'POST'])
+@login_required
+def set_orderdetails():
+    form = OrderDetailsForm()
+    if form.validate_on_submit():
+        orderdetails = OrderDetails(name=form.name.data)
+        db.session.add(orderdetails)
+        db.session.commit()
+        flash(_('Your changes have been saved.'))
+        return redirect(url_for('index'))
+    return render_template('set_orderdetails.html.j2', title=_('orderdetails'),
+                           form=form, user=user)
+
+@app.route('/set_orderstatus', methods=['GET', 'POST'])
+@login_required
+def set_orderstatus():
+    form = OrderStatusForm()
+    if form.validate_on_submit():
+        orderstatus = OrderStatus(name=form.name.data)
+        db.session.add(orderstatus)
+        db.session.commit()
+        flash(_('Your changes have been saved.'))
+        return redirect(url_for('index'))
+    return render_template('set_orderstatus.html.j2', title=_('orderstatus'),
                            form=form, user=user)

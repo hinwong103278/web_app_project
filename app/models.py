@@ -104,11 +104,13 @@ class Payment(db.Model):
     def __repr__(self) -> str:
         return f'<Payment {self.payment}>'
     
-##class Order(db.Model):
-##    id = db.Column(db.Integer, primary_key=True)
-##    date = db.Column(db.Datetime, index=True, default=datetime.utcnow)
-##    # items = db.Column(db.String, db.ForeignKey('product.name'))
-##    cost = db.Column(db.Float(9))
+class CustomerOrder(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.DateTime, default=datetime.utcnow)
+    items = db.relationship('Product', backref='author', lazy='dynamic')
+    Details = db.relationship('OrderDetails', backref='author', lazy='dynamic')
+    status = db.relationship('OrderStatus', backref='author', lazy='dynamic')
+    cost = db.Column(db.Float(9))
 
 class ShippingAddresses(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -123,8 +125,67 @@ class ShippingAddresses(db.Model):
 class Wishlist(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     wishitem =  db.Column(db.String(140))
-    #product_id = db.Column(db.Integer, db.ForeignKey(''))
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     def __repr__(self) -> str:
         return f'<Wishlist {self.wishitem}>'
+
+class Product(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(140))
+    description = db.Column(db.String(140))
+    price = db.Column(db.Float)
+    image = db.Column(db.String(200))
+    category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
+    brand_id = db.Column(db.Integer, db.ForeignKey('brand.id'))
+    reviews = db.relationship('ProductReview', backref='product', lazy='dynamic')
+    order_id = db.Column(db.Integer, db.ForeignKey('customer_order.id'))
+
+    def __repr__(self) -> str:
+        return f'<Product {self.name}>'
+    
+class Category(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(140))
+    description = db.Column(db.String(140))
+    products = db.relationship('Product', backref='category', lazy='dynamic')
+
+    def __repr__(self) -> str:
+        return f'<Category {self.name}>'
+    
+class Brand(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(140))
+    description = db.Column(db.String(140))
+    products = db.relationship('Product', backref='brand', lazy='dynamic')
+
+    def __repr__(self) -> str:
+        return f'<Brand {self.name}>'
+
+class ProductReview(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    rating = db.Column(db.Integer)
+    comment = db.Column(db.String(500))
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    def __repr__(self) -> str:
+        return f'<ProductReview {self.comment}>'
+    
+class OrderDetails(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('customer_order.id'))
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
+    quantity = db.Column(db.Integer)
+
+    def __repr__(self) -> str:
+        return f'<OrderDetails {self.id}>'
+    
+class OrderStatus(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    status = db.Column(db.String(140))
+    order_id = db.Column(db.Integer, db.ForeignKey('customer_order.id'))
+
+    def __repr__(self) -> str:
+        return f'<OrderStatus {self.status}>'

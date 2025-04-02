@@ -31,6 +31,15 @@
             <li>
                 <a href="{{ url_for('shippingAddress') }}">{{ _('setshippingAddress') }}</a>
             </li>
+            <li>
+                <a href="{{ url_for('product') }}">{{ _('Product') }}</a>
+            </li>
+            <li>
+                <a href="{{ url_for('category') }}">{{ _('Category') }}</a>
+            </li>
+            <li>
+                <a href="{{ url_for('brand') }}">{{ _('Brand') }}</a>
+            </li>
         {% endif %}
     {% endblock %}
 {% endblock %}
