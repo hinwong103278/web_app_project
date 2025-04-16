@@ -7,8 +7,8 @@ from app import app, db
 from app.forms import LoginForm, RegistrationForm, EditProfileForm, PostForm, \
     ResetPasswordRequestForm, ResetPasswordForm, PaymentForm, ShippingAddressesForm, \
     UserAddressForm, ProductForm, BrandForm, CategoryForm, ProductReviewForm, \
-    OrderDetailsForm, OrderStatusForm
-from app.models import User, Post, Payment, ShippingAddresses, Product, Brand, Category, ProductReview, OrderDetails, OrderStatus
+    OrderDetailsForm, OrderStatusForm, CartForm, CouponForm, CustomerOrderForm
+from app.models import User, Post, Payment, ShippingAddresses, Product, Brand, Category, ProductReview, OrderDetails, OrderStatus, CustomerOrder, Coupon, Cart
 from app.email import send_password_reset_email
 
 
@@ -309,3 +309,39 @@ def set_orderstatus():
         return redirect(url_for('index'))
     return render_template('set_orderstatus.html.j2', title=_('orderstatus'),
                            form=form, user=user)
+
+@app.route('/set_cart', methods=['GET', 'POST'])
+@login_required
+def set_cart():
+    form = CartForm()
+    if form.validate_on_submit():
+        cart_item = Cart(user_id=form.user_id.data, product_id=form.product_id.data, quantity=form.quantity.data)
+        db.session.add(cart_item)
+        db.session.commit()
+        flash(_('Your changes have been saved.'))
+        return redirect(url_for('index'))
+    return render_template('set_cart.html.j2', title=_('Set Cart'), form=form)
+
+@app.route('/set_coupon', methods=['GET', 'POST'])
+@login_required
+def set_coupon():
+    form = CouponForm()
+    if form.validate_on_submit():
+        coupon = Coupon(code=form.code.data, discount_percentage=form.discount_percentage.data, expiration_date=form.expiration_date.data)
+        db.session.add(coupon)
+        db.session.commit()
+        flash(_('Your coupon has been created.'))
+        return redirect(url_for('index'))
+    return render_template('set_coupon.html.j2', title=_('Set Coupon'), form=form)
+
+@app.route('/set_customer_order', methods=['GET', 'POST'])
+@login_required
+def set_customer_order():
+    form = CustomerOrderForm()
+    if form.validate_on_submit():
+        order = CustomerOrder(date=form.date.data, user_id=form.user_id.data, cost=form.cost.data)
+        db.session.add(order)
+        db.session.commit()
+        flash(_('Your order has been created.'))
+        return redirect(url_for('index'))
+    return render_template('set_customer_order.html.j2', title=_('Set Customer Order'), form=form)
