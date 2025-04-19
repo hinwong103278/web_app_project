@@ -115,3 +115,21 @@ class OrderStatusForm(FlaskForm):
     id = StringField(_l('Order ID'), validators=[DataRequired()])
     status = SelectField(_l('Status'), choices=[('Pending', 'Pending'), ('Shipped', 'Shipped'), ('Delivered', 'Delivered')], validators=[DataRequired()])
     submit = SubmitField(_l('Update Status'))
+
+class CartForm(FlaskForm):
+    user_id = IntegerField(_l('User ID'), validators=[DataRequired()])
+    product_id = IntegerField(_l('Product ID'), validators=[DataRequired()])
+    quantity = IntegerField(_l('Quantity'), validators=[DataRequired()], default=1)
+    submit = SubmitField(_l('Add to Cart'))
+
+class CouponForm(FlaskForm):
+    code = StringField(_l('Coupon Code'), validators=[DataRequired()])
+    discount_percentage = IntegerField(_l('Discount Percentage'), validators=[DataRequired()])
+    expiration_date = StringField(_l('Expiration Date (YYYY-MM-DD)'), validators=[DataRequired()])
+    submit = SubmitField(_l('Create Coupon'))
+
+class CustomerOrderForm(FlaskForm):
+    date = StringField(_l('Order Date (YYYY-MM-DD)'), validators=[DataRequired()])
+    user_id = IntegerField(_l('User ID'), validators=[DataRequired()])
+    cost = IntegerField(_l('Total Cost'), validators=[DataRequired()])
+    submit = SubmitField(_l('Place Order'))
