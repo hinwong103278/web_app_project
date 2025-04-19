@@ -1,119 +1,226 @@
 {% extends "base.html.j2" %}
 {% import 'bootstrap/wtf.html' as wtf %}
 {% block app_content %}
-    <h1>{{ _('Product') }}</h1>
-    <div class="row">
-        <div class="col-md-4">
-            <h2>{{ _('Product') }}</h2>
-            <p>{{ product.name }}</p>
+    {% extends "base.html.j2" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+    <!-- 標題和操作按鈕區 -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>{{ _('Product Details') }}</h1>
+        <div>
+            <button class="btn btn-sm btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#brandModal">
+                <i class="fas fa-tag"></i> {{ _('Set Brand') }}
+            </button>
+            <button class="btn btn-sm btn-outline-secondary me-2" data-bs-toggle="modal" data-bs-target="#categoryModal">
+                <i class="fas fa-folder"></i> {{ _('Set Category') }}
+            </button>
+            <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#couponModal">
+                <i class="fas fa-percent"></i> {{ _('Add Coupon') }}
+            </button>
+        </div>
+    </div>
+
+    <!-- 產品基本信息卡片 -->
+    <div class="row mb-4">
+        <!-- 主產品信息 -->
+        <div class="col-md-5 card p-3 mb-3">
+            <div class="d-flex justify-content-between">
+                <h2 class="h4">{{ product.name }}</h2>
+                <span class="badge bg-{{ 'success' if product.availability else 'danger' }}">
+                    {{ _('In Stock') if product.availability else _('Out of Stock') }}
+                </span>
+            </div>
+            <hr>
             <p>{{ product.description }}</p>
+            <div class="mt-auto">
+                <div class="d-flex align-items-center">
+                    <span class="fs-4 fw-bold text-danger me-2">${{ "%.2f"|format(product.special_price or product.price) }}</span>
+                    {% if product.special_price %}
+                        <span class="text-decoration-line-through text-muted">${{ "%.2f"|format(product.price) }}</span>
+                        <span class="badge bg-danger ms-2">{{ product.discount }}% OFF</span>
+                    {% endif %}
+                </div>
+                <small class="text-muted">{{ _('SKU') }}: {{ product.sku }} | {{ _('Stock') }}: {{ product.stock }}</small>
+            </div>
         </div>
-        <div class="col-md-4">
-            <h2>{{ _('Brand') }}</h2>
-            <p>{{ product.brand.name }}</p>
-            <p>{{ product.brand.description }}</p>
+
+        <!-- 圖片展示 -->
+        <div class="col-md-7">
+            <div class="card p-3 h-100">
+                <h2 class="h4">{{ _('Product Images') }}</h2>
+                <div class="d-flex flex-wrap">
+                    {% for image in product.images %}
+                        <img src="{{ image.url }}" alt="{{ image.alt }}" class="img-thumbnail m-2" style="height: 120px;">
+                    {% else %}
+                        <p class="text-muted">{{ _('No images available') }}</p>
+                    {% endfor %}
+                </div>
+            </div>
         </div>
-        <div class="col-md-4">
-            <h2>{{ _('Category') }}</h2>
+    </div>
+
+    <!-- 詳細信息行 -->
+    <div class="row mb-4">
+        <!-- 品牌和分類 -->
+        <div class="col-md-3 card p-3 me-2">
+            <h2 class="h4">{{ _('Brand') }}</h2>
+            <div class="d-flex align-items-center mb-3">
+                {% if product.brand.logo %}
+                    <img src="{{ product.brand.logo }}" alt="{{ product.brand.name }}" style="height: 30px;" class="me-2">
+                {% endif %}
+                <span>{{ product.brand.name }}</span>
+            </div>
+            <h2 class="h4">{{ _('Category') }}</h2>
             <p>{{ product.category.name }}</p>
-            <p>{{ product.category.description }}</p>
         </div>
-        <div class="col-md-4">
-            <h2>{{ _('Tags') }}</h2>
-            <ul>
+
+        <!-- 規格信息 -->
+        <div class="col-md-3 card p-3 me-2">
+            <h2 class="h4">{{ _('Specifications') }}</h2>
+            <ul class="list-unstyled">
+                <li><strong>{{ _('Weight') }}:</strong> {{ product.weight }} kg</li>
+                <li><strong>{{ _('Dimensions') }}:</strong> {{ product.dimensions }}</li>
+                <li><strong>{{ _('Shipping') }}:</strong> ${{ "%.2f"|format(product.shipping) }}</li>
+                <li><strong>{{ _('Tax') }}:</strong> {{ product.tax }}%</li>
+            </ul>
+        </div>
+
+        <!-- 標籤 -->
+        <div class="col-md-2 card p-3 me-2">
+            <h2 class="h4">{{ _('Tags') }}</h2>
+            <div>
                 {% for tag in product.tags %}
-                    <li>{{ tag.name }}</li>
+                    <span class="badge bg-info me-1 mb-1">{{ tag.name }}</span>
+                {% else %}
+                    <p class="text-muted small">{{ _('No tags') }}</p>
                 {% endfor %}
-            </ul>
+            </div>
         </div>
-        <div class="col-md-4">
-            <h2>{{ _('Images') }}</h2>
-            <ul>
-                {% for image in product.images %}
-                    <li><img src="{{ image.url }}" alt="{{ image.alt }}"></li>
-                {% endfor %}
-            </ul>
+
+        <!-- 促銷信息 -->
+        {% if product.special_price %}
+        <div class="col-md-3 card p-3 bg-light">
+            <h2 class="h4 text-danger">{{ _('Promotion') }}</h2>
+            <div class="mb-2">
+                <i class="fas fa-clock me-1"></i>
+                {{ product.special_price_from.strftime('%Y-%m-%d') if product.special_price_from }} 
+                ~ 
+                {{ product.special_price_to.strftime('%Y-%m-%d') if product.special_price_to }}
+            </div>
+            <div class="progress mb-2" style="height: 10px;">
+                <div class="progress-bar bg-danger" style="width: {{ 100 - product.discount }}%"></div>
+            </div>
+            <small class="text-muted">{{ _('Special price ends soon') }}</small>
         </div>
-        <div class="col-md-4">
-            <h2>{{ _('Reviews') }}</h2>
-            <ul>
-                {% for review in product.reviews %}
-                    <li>{{ review.content }} - {{ review.rating }} stars</li>
-                {% endfor %}
-            </ul>
+        {% endif %}
+    </div>
+
+    <!-- 評論區 -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card p-3">
+                <h2 class="h4">{{ _('Customer Reviews') }}</h2>
+                {% if product.reviews %}
+                    {% for review in product.reviews %}
+                        <div class="border-bottom pb-3 mb-3">
+                            <div class="d-flex justify-content-between">
+                                <strong>{{ review.user.username }}</strong>
+                                <div>
+                                    {% for i in range(5) %}
+                                        {% if i < review.rating %}
+                                            <i class="fas fa-star text-warning"></i>
+                                        {% else %}
+                                            <i class="far fa-star text-warning"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <p class="mb-1">{{ review.content }}</p>
+                            <small class="text-muted">{{ review.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">{{ _('No reviews yet') }}</p>
+                {% endif %}
+
+                <!-- 評論表單 -->
+                <div class="mt-4">
+                    <h3 class="h5">{{ _('Add Your Review') }}</h3>
+                    {% include "set_productreview.html.j2" %}
+                </div>
+            </div>
         </div>
-        <div class="col-md-4">
-            <h2>{{ _('Product Availability') }}</h2>
-            <p>{{ product.availability }}</p>
+    </div>
+
+    <!-- 品牌設置模態框 -->
+    <div class="modal fade" id="brandModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ _('set_brand') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    {{ wtf.quick_form(brand_form, action=url_for('product.set_brand', product_id=product.id)) }}
+                </div>
+            </div>
         </div>
-        <div class="col-md-4">
-            <h2>{{ _('Product Price') }}</h2>
-            <p>{{ product.price }}</p>
+    </div>
+
+    <!-- 分類設置模態框 -->
+    <div class="modal fade" id="categoryModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ _('set_category') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    {{ wtf.quick_form(category_form, action=url_for('product.set_category', product_id=product.id)) }}
+                </div>
+            </div>
         </div>
-        <div class="col-md-4">
-            <h2>{{ _('Product SKU') }}</h2>
-            <p>{{ product.sku }}</p>
+    </div>
+
+    <!-- 優惠券模態框 -->
+    <div class="modal fade" id="couponModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ _('set_coupon') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    {{ wtf.quick_form(coupon_form, action=url_for('product.add_coupon', product_id=product.id)) }}
+                </div>
+            </div>
         </div>
-        <div class="col-md-4">
-            <h2>{{ _('Product Stock') }}</h2>
-            <p>{{ product.stock }}</p>
-        </div>
-        <div class="col-md-4">
-            <h2>{{ _('Product Weight') }}</h2>
-            <p>{{ product.weight }}</p>
-        </div>
-        <div class="col-md-4">
-            <h2>{{ _('Product Dimensions') }}</h2>
-            <p>{{ product.dimensions }}</p>
-        </div>
-        <div class="col-md-4">
-            <h2>{{ _('Product Shipping') }}</h2>
-            <p>{{ product.shipping }}</p>
-        </div>
-        <div class="col-md-4">
-            <h2>{{ _('Product Tax') }}</h2>
-            <p>{{ product.tax }}</p>
-        </div>
-        <div class="col-md-4">
-            <h2>{{ _('Product Discount') }}</h2>
-            <p>{{ product.discount }}</p>
-        </div>
-        <div class="col-md-4">
-            <h2>{{ _('Product Special Price') }}</h2>
-            <p>{{ product.special_price }}</p>
-        </div>
-        <div class="col-md-4">
-            <h2>{{ _('Product Special Price From') }}</h2>
-            <p>{{ product.special_price_from }}</p>
-        </div>
-        <div class="col-md-4">
-            <h2>{{ _('Product Special Price To') }}</h2>
-            <p>{{ product.special_price_to }}</p>
-        </div>
-        <div class="col-md-4">
-            <h2>{{ _('Product Special Price Type') }}</h2>
-            <p>{{ product.special_price_type }}</p>
-        </div>
-        <div class="col-md-4">
-            <h2>{{ _('Product Special Price Type From') }}</h2>
-            <p>{{ product.special_price_type_from }}</p>
-        </div>
-        <div class="col-md-4">
-            <h2>{{ _('Product Special Price Type To') }}</h2>
-            <p>{{ product.special_price_type_to }}</p>
-        </div>
-        <div class="col-md-4">
-            <h2>{{ _('Product Special Price Type Value') }}</h2>
-            <p>{{ product.special_price_type_value }}</p>
-        </div>
-        <div class="col-md-4">
-            <h2>{{ _('Product Special Price Type Value From') }}</h2>
-            <p>{{ product.special_price_type_value_from }}</p>
-        </div>
-        <div class="col-md-4">
-            <h2>{{ _('Product Special Price Type Value To') }}</h2>
-            <p>{{ product.special_price_type_value_to }}</p>
-        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <!-- 動態表單交互 -->
+    <script>
+        // 自動關閉模態框並刷新頁面
+        $('form[data-ajax=false]').on('submit', function() {
+            const modalId = $(this).closest('.modal').attr('id');
+            $('#' + modalId).modal('hide');
+        });
+
+        // AJAX 評論提交示例
+        $('#review-form').on('submit', function(e) {
+            e.preventDefault();
+            $.post({
+                url: $(this).attr('action'),
+                data: $(this).serialize(),
+                success: function(response) {
+                    location.reload(); // 簡單示例，實際可改為動態插入
+                }
+            });
+        });
+    </script>
     <div class="row">
         <div class="col-md-4">{{ wtf.quick_form(form) }}</div>
     </div>

@@ -3,84 +3,89 @@
     {{ title }} - PNS
     {% if not title %}{{ _('Welcome to PNS') }}{% endif %}
 {% endblock %}
+
 {% block navbar %}
-    <nav class="collapse navbar-collapse" id="main-navbar">
+<nav class="navbar navbar-default">
+    <div class="container">
         <!-- Promotional banner -->
         <div class="promo-banner swiper-container">
             <div class="swiper-wrapper">
                 <div class="swiper-slide">
                     ⭐{{ _('Free delivery on orders over $350') }}
-                </a>
+                </div>
             </div>
         </div>
-        <div class="navbar-brand" id="logo">
+        
+        <div class="navbar-header">
             <!-- Main navigation -->
             <a href="{{ url_for('index') }}" class="navbar-brand">
                 <img src="https://api.pns.hk/medias/PNS-logo-2X.png?context=bWFzdGVyfHBuc2hrL2ltYWdlc3w4MDE0fGltYWdlL3BuZ3xhREZsTDJnNU5DOHhNRFl4TmprNU9EazROVGMxT0M5UVRsTmZiRzluYjE4eVdDNXdibWN8Nzg4ODYyOWY1NDEwM2VhMjNkMjJiN2M5ODkxMzQzMjVkYWNkMWQ1NWJhMDk5OWIwZTgzMGViMGE2YzljNTllZQ"
                      alt="PNS Logo"
                      loading="lazy">
-        </div>
-        <!-- Search form -->
-        <form class="navbar-form navbar-left" role="search">
-            <div class="form-group">
-                <input type="text"
-                       class="form-control"
-                       placeholder="{{ _('Search') }}"
-                       aria-label="{{ _('Search') }}">
-            </div>
-            <button type="submit"
-                    class="btn btn-default"
-                    aria-label="{{ _('Submit search') }}">
-                <span class="glyphicon glyphicon-search"></span>
+            </a>
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main-navbar" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
             </button>
-        </form>
-        <!-- Right side navigation -->
-        <ul class="nav navbar-nav navbar-right">
-            <!-- Language selector -->
-            <li class="dropdown">
-                <a href="#"
-                   class="dropdown-toggle"
-                   data-toggle="dropdown"
-                   role="button"
-                   aria-haspopup="true"
-                   aria-expanded="false">
-                    {{ g.locale }} <span class="caret"></span>
-                </a>
-                <ul class="dropdown-menu">
-                    <li>
-                        <a href="/en/">English</a>
-                    </li>
-                    <li>
-                        <a href="/zh-hk/">繁體中文</a>
-                    </li>
-                </ul>
-            </li>
-            <!-- User account -->
-            {% if current_user.is_anonymous %}
-                <li>
-                    <a href="{{ url_for('login') }}">{{ _('Login') }}</a>
+        </div>
+
+        <div class="collapse navbar-collapse" id="main-navbar">
+            <!-- Search form -->
+            <form class="navbar-form navbar-left" role="search">
+                <div class="form-group">
+                    <input type="text"
+                           class="form-control"
+                           placeholder="{{ _('Search') }}"
+                           aria-label="{{ _('Search') }}">
+                </div>
+                <button type="submit"
+                        class="btn btn-default"
+                        aria-label="{{ _('Submit search') }}">
+                    <span class="glyphicon glyphicon-search"></span>
+                </button>
+            </form>
+            
+            <!-- Right side navigation -->
+            <ul class="nav navbar-nav navbar-right">
+                <!-- Language selector -->
+                <li class="dropdown">
+                    <a href="#"
+                       class="dropdown-toggle"
+                       data-toggle="dropdown"
+                       role="button"
+                       aria-haspopup="true"
+                       aria-expanded="false">
+                        {{ g.locale }} <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/en/">English</a></li>
+                        <li><a href="/zh-hk/">繁體中文</a></li>
+                    </ul>
                 </li>
-            {% else %}
+                
+                <!-- User account -->
+                {% if current_user.is_anonymous %}
+                    <li><a href="{{ url_for('login') }}">{{ _('Login') }}</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('user', username=current_user.username) }}">{{ _('Profile') }}</a></li>
+                    <li><a href="{{ url_for('logout') }}">{{ _('Logout') }}</a></li>
+                {% endif %}
+                
+                <!-- Shopping cart -->
                 <li>
-                    <a href="{{ url_for('user', username=current_user.username) }}">{{ _('Profile') }}</a>
+                    <a href="{{ url_for('cart') }}"
+                       class="cart-link"
+                       aria-label="{{ _('Shopping cart') }}"
+                       data-cart-count="{{ cart_item_count }}">
+                        <span class="glyphicon glyphicon-shopping-cart"></span>
+                        <span class="badge">{{ cart_item_count }}</span>
+                    </a>
                 </li>
-                <li>
-                    <a href="{{ url_for('logout') }}">{{ _('Logout') }}</a>
-                </li>
-            {% endif %}
-            <!-- Shopping cart -->
-            <li>
-                <a href="{{ url_for('cart') }}"
-                   class="cart-link"
-                   aria-label="{{ _('Shopping cart') }}"
-                   data-cart-count="{{ cart_item_count }}">
-                    <span class="glyphicon glyphicon-shopping-cart"></span>
-                    <span class="badge">{{ cart_item_count }}</span>
-                </a>
-            </li>
-        </ul>
+            </ul>
+        </div>
     </div>
-</div>
 </nav>
 <!-- Category Navigation Tabs -->
 <div class="category-navigation">
@@ -88,7 +93,7 @@
         <div class="swiper-container">
             <div class="swiper-wrapper">
                 <div class="swiper-slide">
-                    <a class="nav-item selected" href="/zh-hk/foodBeverages">
+                    <a class="nav-item selected" href="https://www.pns.hk/zh-hk/foodBeverages">
                         <div class="nav-item-wrapper">
                             <span>食品及飲品</span>
                             <i class="icon-arrow-down"></i>
@@ -96,7 +101,7 @@
                     </a>
                 </div>
                 <div class="swiper-slide">
-                    <a class="nav-item" href="/zh-hk/babyMum">
+                    <a class="nav-item" href="https://www.pns.hk/zh-hk/babyMum">
                         <div class="nav-item-wrapper">
                             <span>母嬰</span>
                             <i class="icon-arrow-down"></i>
@@ -104,7 +109,7 @@
                     </a>
                 </div>
                 <div class="swiper-slide">
-                    <a class="nav-item" href="/zh-hk/personalCareHealth">
+                    <a class="nav-item" href="https://www.pns.hk/zh-hk/personalCareHealth">
                         <div class="nav-item-wrapper">
                             <span>個人護理、健康</span>
                             <i class="icon-arrow-down"></i>
@@ -112,7 +117,7 @@
                     </a>
                 </div>
                 <div class="swiper-slide">
-                    <a class="nav-item" href="/zh-hk/houseWare">
+                    <a class="nav-item" href="https://www.pns.hk/zh-hk/houseWare">
                         <div class="nav-item-wrapper">
                             <span>家居生活</span>
                             <i class="icon-arrow-down"></i>
@@ -120,7 +125,7 @@
                     </a>
                 </div>
                 <div class="swiper-slide">
-                    <a class="nav-item" href="/zh-hk/petCare">
+                    <a class="nav-item" href="https://www.pns.hk/zh-hk/petCare">
                         <div class="nav-item-wrapper">
                             <span>寵物區</span>
                             <i class="icon-arrow-down"></i>
