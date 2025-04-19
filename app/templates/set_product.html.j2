@@ -3,6 +3,118 @@
 {% block app_content %}
     <h1>{{ _('Product') }}</h1>
     <div class="row">
+        <div class="col-md-4">
+            <h2>{{ _('Product') }}</h2>
+            <p>{{ product.name }}</p>
+            <p>{{ product.description }}</p>
+        </div>
+        <div class="col-md-4">
+            <h2>{{ _('Brand') }}</h2>
+            <p>{{ product.brand.name }}</p>
+            <p>{{ product.brand.description }}</p>
+        </div>
+        <div class="col-md-4">
+            <h2>{{ _('Category') }}</h2>
+            <p>{{ product.category.name }}</p>
+            <p>{{ product.category.description }}</p>
+        </div>
+        <div class="col-md-4">
+            <h2>{{ _('Tags') }}</h2>
+            <ul>
+                {% for tag in product.tags %}
+                    <li>{{ tag.name }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="col-md-4">
+            <h2>{{ _('Images') }}</h2>
+            <ul>
+                {% for image in product.images %}
+                    <li><img src="{{ image.url }}" alt="{{ image.alt }}"></li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="col-md-4">
+            <h2>{{ _('Reviews') }}</h2>
+            <ul>
+                {% for review in product.reviews %}
+                    <li>{{ review.content }} - {{ review.rating }} stars</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="col-md-4">
+            <h2>{{ _('Product Availability') }}</h2>
+            <p>{{ product.availability }}</p>
+        </div>
+        <div class="col-md-4">
+            <h2>{{ _('Product Price') }}</h2>
+            <p>{{ product.price }}</p>
+        </div>
+        <div class="col-md-4">
+            <h2>{{ _('Product SKU') }}</h2>
+            <p>{{ product.sku }}</p>
+        </div>
+        <div class="col-md-4">
+            <h2>{{ _('Product Stock') }}</h2>
+            <p>{{ product.stock }}</p>
+        </div>
+        <div class="col-md-4">
+            <h2>{{ _('Product Weight') }}</h2>
+            <p>{{ product.weight }}</p>
+        </div>
+        <div class="col-md-4">
+            <h2>{{ _('Product Dimensions') }}</h2>
+            <p>{{ product.dimensions }}</p>
+        </div>
+        <div class="col-md-4">
+            <h2>{{ _('Product Shipping') }}</h2>
+            <p>{{ product.shipping }}</p>
+        </div>
+        <div class="col-md-4">
+            <h2>{{ _('Product Tax') }}</h2>
+            <p>{{ product.tax }}</p>
+        </div>
+        <div class="col-md-4">
+            <h2>{{ _('Product Discount') }}</h2>
+            <p>{{ product.discount }}</p>
+        </div>
+        <div class="col-md-4">
+            <h2>{{ _('Product Special Price') }}</h2>
+            <p>{{ product.special_price }}</p>
+        </div>
+        <div class="col-md-4">
+            <h2>{{ _('Product Special Price From') }}</h2>
+            <p>{{ product.special_price_from }}</p>
+        </div>
+        <div class="col-md-4">
+            <h2>{{ _('Product Special Price To') }}</h2>
+            <p>{{ product.special_price_to }}</p>
+        </div>
+        <div class="col-md-4">
+            <h2>{{ _('Product Special Price Type') }}</h2>
+            <p>{{ product.special_price_type }}</p>
+        </div>
+        <div class="col-md-4">
+            <h2>{{ _('Product Special Price Type From') }}</h2>
+            <p>{{ product.special_price_type_from }}</p>
+        </div>
+        <div class="col-md-4">
+            <h2>{{ _('Product Special Price Type To') }}</h2>
+            <p>{{ product.special_price_type_to }}</p>
+        </div>
+        <div class="col-md-4">
+            <h2>{{ _('Product Special Price Type Value') }}</h2>
+            <p>{{ product.special_price_type_value }}</p>
+        </div>
+        <div class="col-md-4">
+            <h2>{{ _('Product Special Price Type Value From') }}</h2>
+            <p>{{ product.special_price_type_value_from }}</p>
+        </div>
+        <div class="col-md-4">
+            <h2>{{ _('Product Special Price Type Value To') }}</h2>
+            <p>{{ product.special_price_type_value_to }}</p>
+        </div>
+    <div class="row">
         <div class="col-md-4">{{ wtf.quick_form(form) }}</div>
     </div>
 {% endblock %}

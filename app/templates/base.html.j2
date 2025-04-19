@@ -1,73 +1,690 @@
 {% extends 'bootstrap/base.html' %}
 {% block title %}
-    {% if title %}
-        {{ title }} - Microblog
-    {% else %}
-        {{ _('Welcome to Microblog') }}
-    {% endif %}
+    {{ title }} - PNS
+    {% if not title %}{{ _('Welcome to PNS') }}{% endif %}
 {% endblock %}
 {% block navbar %}
-    <nav class="navbar navbar-default">
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button"
-                        class="navbar-toggle collapsed"
-                        data-toggle="collapse"
-                        data-target="#bs-example-navbar-collapse-1"
-                        aria-expanded="false">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="{{ url_for('index') }}">Microblog</a>
-            </div>
-            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                <ul class="nav navbar-nav">
-                    <li>
-                        <a href="{{ url_for('index') }}">{{ _('Home') }}</a>
-                    </li>
-                    <li>
-                        <a href="{{ url_for('explore') }}">{{ _('Explore') }}</a>
-                    </li>
-                </ul>
-                <ul class="nav navbar-nav navbar-right">
-                    {% if current_user.is_anonymous %}
-                        <li>
-                            <a href="{{ url_for('login') }}">{{ _('Login') }}</a>
-                        </li>
-                    {% else %}
-                        <li>
-                            <a href="{{ url_for('user', username=current_user.username) }}">{{ _('Profile') }}</a>
-                        </li>
-                        <li>
-                            <a href="{{ url_for('logout') }}">{{ _('Logout') }}</a>
-                        </li>
-                        <li>
-                            <a href="{{ url_for('payment') }}">{{ _('Payment') }}</a>
-                        </li>
-                        <li>
-                            <a href="{{ url_for('set_product') }}">{{ _('Product') }}</a>
-                        </li>
-                    {% endif %}
-                </ul>
+    <nav class="collapse navbar-collapse" id="main-navbar">
+        <!-- Promotional banner -->
+        <div class="promo-banner swiper-container">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    ⭐{{ _('Free delivery on orders over $350') }}
+                </a>
             </div>
         </div>
-    </nav>
+        <div class="navbar-brand" id="logo">
+            <!-- Main navigation -->
+            <a href="{{ url_for('index') }}" class="navbar-brand">
+                <img src="https://api.pns.hk/medias/PNS-logo-2X.png?context=bWFzdGVyfHBuc2hrL2ltYWdlc3w4MDE0fGltYWdlL3BuZ3xhREZsTDJnNU5DOHhNRFl4TmprNU9EazROVGMxT0M5UVRsTmZiRzluYjE4eVdDNXdibWN8Nzg4ODYyOWY1NDEwM2VhMjNkMjJiN2M5ODkxMzQzMjVkYWNkMWQ1NWJhMDk5OWIwZTgzMGViMGE2YzljNTllZQ"
+                     alt="PNS Logo"
+                     loading="lazy">
+        </div>
+        <!-- Search form -->
+        <form class="navbar-form navbar-left" role="search">
+            <div class="form-group">
+                <input type="text"
+                       class="form-control"
+                       placeholder="{{ _('Search') }}"
+                       aria-label="{{ _('Search') }}">
+            </div>
+            <button type="submit"
+                    class="btn btn-default"
+                    aria-label="{{ _('Submit search') }}">
+                <span class="glyphicon glyphicon-search"></span>
+            </button>
+        </form>
+        <!-- Right side navigation -->
+        <ul class="nav navbar-nav navbar-right">
+            <!-- Language selector -->
+            <li class="dropdown">
+                <a href="#"
+                   class="dropdown-toggle"
+                   data-toggle="dropdown"
+                   role="button"
+                   aria-haspopup="true"
+                   aria-expanded="false">
+                    {{ g.locale }} <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a href="/en/">English</a>
+                    </li>
+                    <li>
+                        <a href="/zh-hk/">繁體中文</a>
+                    </li>
+                </ul>
+            </li>
+            <!-- User account -->
+            {% if current_user.is_anonymous %}
+                <li>
+                    <a href="{{ url_for('login') }}">{{ _('Login') }}</a>
+                </li>
+            {% else %}
+                <li>
+                    <a href="{{ url_for('user', username=current_user.username) }}">{{ _('Profile') }}</a>
+                </li>
+                <li>
+                    <a href="{{ url_for('logout') }}">{{ _('Logout') }}</a>
+                </li>
+            {% endif %}
+            <!-- Shopping cart -->
+            <li>
+                <a href="{{ url_for('cart') }}"
+                   class="cart-link"
+                   aria-label="{{ _('Shopping cart') }}"
+                   data-cart-count="{{ cart_item_count }}">
+                    <span class="glyphicon glyphicon-shopping-cart"></span>
+                    <span class="badge">{{ cart_item_count }}</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+</nav>
+<!-- Category Navigation Tabs -->
+<div class="category-navigation">
+    <div class="container">
+        <div class="swiper-container">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <a class="nav-item selected" href="/zh-hk/foodBeverages">
+                        <div class="nav-item-wrapper">
+                            <span>食品及飲品</span>
+                            <i class="icon-arrow-down"></i>
+                        </div>
+                    </a>
+                </div>
+                <div class="swiper-slide">
+                    <a class="nav-item" href="/zh-hk/babyMum">
+                        <div class="nav-item-wrapper">
+                            <span>母嬰</span>
+                            <i class="icon-arrow-down"></i>
+                        </div>
+                    </a>
+                </div>
+                <div class="swiper-slide">
+                    <a class="nav-item" href="/zh-hk/personalCareHealth">
+                        <div class="nav-item-wrapper">
+                            <span>個人護理、健康</span>
+                            <i class="icon-arrow-down"></i>
+                        </div>
+                    </a>
+                </div>
+                <div class="swiper-slide">
+                    <a class="nav-item" href="/zh-hk/houseWare">
+                        <div class="nav-item-wrapper">
+                            <span>家居生活</span>
+                            <i class="icon-arrow-down"></i>
+                        </div>
+                    </a>
+                </div>
+                <div class="swiper-slide">
+                    <a class="nav-item" href="/zh-hk/petCare">
+                        <div class="nav-item-wrapper">
+                            <span>寵物區</span>
+                            <i class="icon-arrow-down"></i>
+                        </div>
+                    </a>
+                </div>
+                <div class="swiper-slide">
+                    <a class="nav-item navPromotion noSubMenu"
+                       href="https://www.pns.hk/zh-hk/c/own-brands">
+                        <div class="nav-item-wrapper">
+                            <span>獨家產品</span>
+                        </div>
+                    </a>
+                </div>
+                <div class="swiper-slide">
+                    <a class="nav-item navWatsonsWine noSubMenu"
+                       href="https://www.pns.hk/zh-hk/lsc/watsonswine/watsonswine">
+                        <div class="nav-item-wrapper">
+                            <span>屈臣氏酒窖</span>
+                        </div>
+                    </a>
+                </div>
+                <div class="swiper-slide">
+                    <a class="nav-item navFlagship noSubMenu"
+                       href="https://www.pns.hk/zh-hk/lf/watsons">
+                        <div class="nav-item-wrapper">
+                            <span>屈臣氏旗艦店</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 {% block content %}
     <div class="container">
-        {% with messages = get_flashed_messages() %}
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-                {% for message in messages %}<div class="alert alert-info" role="alert">{{ message }}</div>{% endfor %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible" role="alert">
+                        <button type="button"
+                                class="close"
+                                data-dismiss="alert"
+                                aria-label="{{ _('Close') }}">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        {{ message }}
+                    </div>
+                {% endfor %}
             {% endif %}
         {% endwith %}
-        {# application content needs to be provided in the app_content block #}
-        {% block app_content %}{% endblock %}
+        <!-- Main content -->
+        <main id="main-content">
+            {% block app_content %}{% endblock %}
+        </main>
     </div>
+    <!-- Footer -->
+    <footer class="site-footer" role="contentinfo">
+        <div class="container">
+            <!-- Awards Section -->
+            <section class="footer-section awards-section"
+                     aria-labelledby="awards-heading">
+                <h2 id="awards-heading" class="visually-hidden">{{ _('Awards and Certifications') }}</h2>
+                <div class="awards-grid">
+                    <figure class="award-item">
+                        <img src="https://api.pns.hk/medias/Awards1.1.png?context=bWFzdGVyfGltYWdlc3wxMjgzNXxpbWFnZS9wbmd8YURsaEwyZzFOQzh4TVRBME56TXlNRFUxTVRRMU5DOUJkMkZ5WkhNeExqRXVjRzVufDQwZjkyOTY1MDg2ZDc0YzMyNzU1MDg5Y2U5NzNmM2FkN2RhNDdmZjQ3ZmNkOTMxYmNkYTI2OTFlOTE3NWYzZWU"
+                             alt="eshop"
+                             loading="lazy"
+                             onerror="this.src='https://api.pns.hk/medias/Awards1.1.png">
+                    </figure>
+                    <figure class="award-item">
+                        <img src="https://api.pns.hk/medias/Awards2.1.png?context=bWFzdGVyfGltYWdlc3w3OTkwfGltYWdlL3BuZ3xhRFU1TDJnMU9DOHhNVEEwTnpNeU1EWTRNalV5Tmk5QmQyRnlaSE15TGpFdWNHNW58YmYzOGFmNDhiZTAzOTVlOGNlYTczYjYxM2M2N2JmNjE2ODNjMjU0YTYzZWI4ZmIxNDNkNzlkZjFjN2E0NzI3OQ"
+                             alt="ocox"
+                             loading="lazy"
+                             onerror="this.src='https://api.pns.hk/medias/Awards2.1.png">
+                    </figure>
+                    <figure class="award-item">
+                        <img src="https://api.pns.hk/medias/33.png?context=bWFzdGVyfGltYWdlc3w0MjA1fGltYWdlL3BuZ3xhRFUyTDJneFpTODVPVGt6TmpjM01qUXlNems0THpNekxuQnVad3w2Mjg2MWZkNWUyMjVjYzc0MTQ0Y2ViOTU0NjNiMTA1YzNiZTcyMWNiNGU0YjViYWVjM2IwMDgzMjZmMjIxNThj"
+                             alt="Quality"
+                             loading="lazy"
+                             onerror="this.src='https://api.pns.hk/medias/33.png">
+                    </figure>
+                    <figure class="award-item">
+                        <img src="https://api.pns.hk/medias/award-friendly.png?context=bWFzdGVyfGltYWdlc3w0ODk0fGltYWdlL3BuZ3xhRGcyTDJnM1pDODVPVGsxTlRRNE1EQXdNamcyTDJGM1lYSmtMV1p5YVdWdVpHeDVMbkJ1Wnd8NTM5ZjVkYWFhZmJiNDFmZjk5YzEwNWEyOThkYmVjMWQxZjFhNTgxYjBhMTYxYzEyYmM5MTJlNWQzNWVlZWE3NA"
+                             alt="L-xol"
+                             loading="lazy"
+                             onerror="this.src='https://api.pns.hk/medias/award-friendly.png">
+                    </figure>
+                    <figure class="award-item">
+                        <img src="https://api.pns.hk/medias/Awards5.png?context=bWFzdGVyfGltYWdlc3w3MzkxfGltYWdlL3BuZ3xhR0U1TDJnNFlpOHhNREk0TlRjMU1EazNOalUwTWk5QmQyRnlaSE0xTG5CdVp3fDdlODRlZWRmYzljYTUzYmM2YTgzNzhjZjFmMTc4YzNiNjExMDU3MzM0MTY2ZTNhZWY5MDE1YTc4NGU5YjM2MDM"
+                             alt="award"
+                             loading="lazy"
+                             onerror="this.src='https://api.pns.hk/medias/award-friendly.png">
+                    </figure>
+                    <figure class="award-item">
+                        <img src="https://api.pns.hk/medias/Awards6.jpg?context=bWFzdGVyfGltYWdlc3w5NDYyfGltYWdlL2pwZWd8YURRMUwyZ3hZUzh4TVRjM09EQTFNakk1TWpZek9DOUJkMkZ5WkhNMkxtcHdad3xmNjJhMTJhYzdlZDRlOGE1ZDg2NzVjMDc1YWYyN2Q1ZGQxOTIwMDE5MzE0OTY1ZTIyZTI4YTQ3ODk5ZmZhNTI4"
+                             alt="consumer"
+                             loading="lazy"
+                             onerror="this.src='https://api.pns.hk/medias/award-friendly.png">
+                    </figure>
+                </div>
+            </section>
+            <!-- Payment Methods -->
+            <section class="footer-section payment-section"
+                     aria-labelledby="payments-heading">
+                <h2 id="payments-heading" class="visually-hidden">{{ _('Payment Methods') }}</h2>
+                <div class="payment-methods">
+                    <figure class="payment-method">
+                        <img src="https://api.pns.hk/medias/E2-VS-1.png?context=bWFzdGVyfHBuc2hrL2ltYWdlc3wyODYzfGltYWdlL3BuZ3xhR1UzTDJnMU1DODVNelUzT1RNeE56QTRORFEyTDBVeVgxWlRYekV1Y0c1bnwzODdiNTcwMDRmN2NjYThjZDc2MGI2NDZlOTllMTE4MTg2NTQxZDQ4ZjRjMGZlMjY3N2FjZGE2MDg5NTg5MGE0"
+                             alt="verisign"
+                             loading="lazy"
+                             onerror="this.src='https://api.pns.hk/medias/E2-VS-1.png">
+                    </figure>
+                    <figure class="payment-method">
+                        <img src="https://api.pns.hk/medias/E2-visa1.png?context=bWFzdGVyfHBuc2hrL2ltYWdlc3wyNDc0fGltYWdlL3BuZ3xhRFV5TDJnMU1TODVNelUzT1RNeE56UXhNakUwTDBVeVgzWnBjMkV4TG5CdVp3fGQwYzQ5MmM3MzZlYzNjM2I5MDgxNjdhMTBmYWU5YjlkNDcwZDA5NjIzNzljMWZiOGVkMzEyZjgxYzMxM2RjNjU"
+                             loading="lazy"
+                             alt="visa"
+                             onerror="this.src='https://api.pns.hk/medias/E2-visa1.png">
+                    </figure>
+                    <figure class="payment-method">
+                        <img src="https://api.pns.hk/medias/E2-master1.png?context=bWFzdGVyfHBuc2hrL2ltYWdlc3wyMDI1fGltYWdlL3BuZ3xhR0U0TDJnMU1TODVNelUzT1RNeE56Y3pPVGd5TDBVeVgyMWhjM1JsY2pFdWNHNW58ZjUxNDYxYzE5MjJlZTExNzBjZjgyOGRkOTRkNjdhY2QxOGRkMTM2N2I4N2Q2ZDQ1YjVhY2RlMjFhNjQ2NTI5OQ"
+                             loading="lazy"
+                             alt="mastercard"
+                             onerror="this.src='https://api.pns.hk/medias/E2-master1.png">
+                    </figure>
+                    <figure class="payment-method">
+                        <img src="https://api.pns.hk/medias/E2-UN1.png?context=bWFzdGVyfHBuc2hrL2ltYWdlc3wzNjM1fGltYWdlL3BuZ3xhRFJtTDJnMU5DODVNelUzT1RNeE9EQTJOelV3TDBVeVgxVk9NUzV3Ym1jfGRkMmFkNjkxOGYxN2YwOGRiMmE0NTJkMDBiZDYwYTMxMjE2MGY3NDcxZjk1Y2VkOTQyNTZkZmVjNzExZWZiNjQ"
+                             loading="lazy"
+                             alt="unionpay"
+                             onerror="this.src='https://api.pns.hk/medias/E2-UN1.png">
+                    </figure>
+                    <figure class="payment-method">
+                        <img src="https://api.pns.hk/medias/E2-AE1.png?context=bWFzdGVyfHBuc2hrL2ltYWdlc3w0MzQ5fGltYWdlL3BuZ3xhR0UyTDJnMU5DODVNelUzT1RNeE9ETTVOVEU0TDBVeVgwRkZNUzV3Ym1jfGM5MDlhNzVlOWVlYzhiMmEwZjY2ZjEwMTI3NjcyYWU1OTMwMmExYzcxNTkxMDFhN2Q4NWUwM2Q4YzA1YzE0Mzc"
+                             loading="lazy"
+                             alt="AE"
+                             onerror="this.src='https://api.pns.hk/medias/E2-JCB1.png">
+                    </figure>
+                    <figure class="payment-method">
+                        <img src="https://api.pns.hk/medias/E2-OC1-1.png?context=bWFzdGVyfHBuc2hrL2ltYWdlc3wyMDEwfGltYWdlL3BuZ3xhREV4TDJnMU5TODVNelUzT1RNeE9EY3lNamcyTDBVeVgwOURNVjh4TG5CdVp3fDEzYTU3YzU5NDdmYWE1Y2IxZDdiN2YwMWYzZmJmNzBkMmYzZDZlY2ExNmMzMzdhOTNhYTg2ZTRlNDBmOGVmMzU"
+                             loading="lazy"
+                             alt="alipay"
+                             onerror="this.src='https://api.pns.hk/medias/E2-AL1.png">
+                    </figure>
+                    <figure class="payment-method">
+                        <img src="https://api.pns.hk/medias/E2-OC1.png?context=bWFzdGVyfHBuc2hrL2ltYWdlc3wyNjc0fGltYWdlL3BuZ3xhR0k0TDJnMU55ODVNelUzT1RNeE9UQTFNRFUwTDBVeVgwOURNUzV3Ym1jfGYwODQxNWQ5OTlmMjgzY2RkM2FjMzI0ZjM2YjBjNjIyZjMzYTkxM2JkYzVjMDQ2MjM2YzdmMWRiODhjZGQxMmM"
+                             loading="lazy"
+                             alt="octopus"
+                             onerror="this.src='https://api.pns.hk/medias/E2-AL1.png">
+                    </figure>
+                    <figure class="payment-method">
+                        <img src="https://api.pns.hk/medias/PayMe.png?context=bWFzdGVyfHBuc2hrL2ltYWdlc3wzMzU3fGltYWdlL3BuZ3xhRE15TDJnMFlTOHhNREEyT1RRNE9UQXlOVEExTkM5UVlYbE5aUzV3Ym1jfDVhMzU2Mzg1MzQ0NjIyMTYwOWYzMjFiYTAwZGM2NmE3ODk0NGVjOTNjMmZhNTAyZmEyMzIwNTEwZmMwMzk4M2I"
+                             loading="lazy"
+                             alt="payme"
+                             onerror="this.src='https://api.pns.hk/medias/E2-PP1.png">
+                    </figure>
+                    <figure class="payment-method">
+                        <img src="https://api.pns.hk/medias/wechat-2.png?context=bWFzdGVyfHBuc2hrL2ltYWdlc3wxMzU3fGltYWdlL3BuZ3xhRFJoTDJobVpTOHhNREEyT1RVek16WTROemd6T0M5M1pXTm9ZWFJmTWk1d2JtY3w2NmVkN2UwYzVhNzkxZjI3OWI4ZTNhMzQ1MGVhNGYwYzEwMjhjODJhNWE5M2U0OGU2NjcyMDk3NDQ0ZWFmNzdh"
+                             loading="lazy"
+                             alt="wechatpay"
+                             onerror="this.src='https://api.pns.hk/medias/E2-PP1.png">
+                </div>
+            </section>
+            <!-- Mobile App Section -->
+            <section class="footer-section app-section" aria-labelledby="app-heading">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h3 id="app-heading">{{ _('Get Our Mobile App') }}</h3>
+                        <p>{{ _('Enjoy a better shopping experience with our app') }}</p>
+                        <div class="download-buttons">
+                            <a href="https://apps.apple.com/hk/app/pns-%E7%B6%B2%E8%B3%BC/id840837558"
+                               class="btn btn-app-store">
+                                <img src="https://www.pns.hk/assets/img/share/icon_appstore.png"
+                                     alt="Download on the App Store"
+                                     loading="lazy">
+                            </a>
+                            <a href="https://play.google.com/store/apps/details?id=com.parknshop.parknshopapp&hl=en"
+                               class="btn btn-google-play">
+                                <img src="https://www.pns.hk/assets/img/share/icon_googleplay.png"
+                                     alt="Get it on Google Play"
+                                     loading="lazy">
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="app-qr">
+                            <img src="https://api.pns.hk/medias/PNS-logo.png?context=bWFzdGVyfHBuc2hrL2ltYWdlc3wyNTk1fGltYWdlL3BuZ3xhREJrTDJoaFlpODVPVFkyTURJeE5UQTVNVFV3TDFCT1UxOXNiMmR2TG5CdVp3fGQ2NjYxNzNkZmM3ZWQwMzdjMTc1YzA1NTQ1NDRhOTdjMTc4NGI3NDRhMDZhN2I4NWJlMWUzOTExYTRmYzE0N2I"
+                                 alt="PNS modile"
+                                 loading="lazy"
+                                 onerror="this.src='https://api.pns.hk/medias/PNS-QR-code.jpg">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="app-qr">
+                            <img src="https://api.pns.hk/medias/PNS-QR-code.jpg?context=bWFzdGVyfHBuc2hrL2ltYWdlc3wzMDQ0NXxpbWFnZS9qcGVnfGFEbGxMMmhpTWk4NU9UWTJNREl4TnpjeE1qazBMMUJPVTE5UlVsOWpiMlJsTG1wd1p3fDQ5NTE3YWJkNGUzMWE5ODUyNjIwMzNjYzA4NTNjZmUxZDliNGM4NzZlNmY0ZWJkMGVkMjg0N2NhMTU3YmViZDk"
+                                 alt="PNS QR code"
+                                 loading="lazy"
+                                 onerror="this.src='https://api.pns.hk/medias/PNS-QR-code.jpg">
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- Footer Navigation -->
+            <nav class="footer-nav" aria-label="{{ _('Footer navigation') }}">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h3 class="footer-nav-heading">關於我們</h3>
+                        <ul class="footer-nav-list">
+                            <li>
+                                <a href="https://www.pns.hk/zh-hk/aboutParknshop">關於百佳</a>
+                            </li>
+                            <li>
+                                <a href="https://www.aswatson.com/">企業資訊</a>
+                            </li>
+                            <li>
+                                <a href="https://www.pns.hk/zh-hk/qaDepartment">百佳品質檢定部</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h3 class="footer-nav-heading">
+                            網上購物
+                        </h3>
+                        <ul class="footer-nav-list">
+                            <li>
+                                <a href="https://www.pns.hk/zh-hk/beginners-guide">網上購物流程</a>
+                            </li>
+                            <li>
+                                <a href="https://www.moneyback.com.hk/zh">易賞錢</a>
+                            </li>
+                            <li>
+                                <a href="https://www.pns.hk/zh-hk/store-finder">店鋪一覽</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h3 class="footer-nav-heading">
+                            客戶服務
+                        </h3>
+                        <ul class="footer-nav-list">
+                            <li>
+                                <a href="https://www.pns.hk/zh-hk/contactUs">聯絡我們</a>
+                            </li>
+                            <li>
+                                <a href="https://www.pns.hk/zh-hk/FAQ">常見問題</a>
+                            </li>
+                            <li>
+                                <a href="https://www.pns.hk/zh-hk/StoreRelated">門市有關</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+            <!-- Copyright -->
+            <div class="copyright-section">
+                <p>
+                    PNS. All rights reserved.
+                </p>
+                <div class="legal-notice">
+                    <p>
+                        {{ _('Under the law of Hong Kong, intoxicating liquor must not be sold or supplied to a minor (under 18) in the course of business.') }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+{% endblock %}
+{% block styles %}
+    {{ super() }}
+    <link rel="stylesheet"
+          href="https://unpkg.com/swiper/swiper-bundle.min.css">
+    <style>
+        /* Base styles */
+        .navbar {
+            min-height: 70px;
+            margin-bottom: 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .navbar-brand img {
+            height: 40px;
+            width: auto;
+            margin-top: -10px;
+        }
+        
+        /* Category Navigation */
+        .category-navigation {
+            background-color: #f8f9fa;
+            border-top: 1px solid #e7e7e7;
+            border-bottom: 1px solid #e7e7e7;
+            padding: 10px 0;
+        }
+        
+        .category-navigation .swiper-container {
+            overflow: hidden;
+            padding: 5px 0;
+        }
+        
+        .category-navigation .swiper-slide {
+            width: auto;
+            padding: 0 15px;
+        }
+        
+        .category-navigation .nav-item {
+            color: #333;
+            text-decoration: none;
+            display: block;
+            padding: 5px 0;
+            position: relative;
+            white-space: nowrap;
+        }
+        
+        .category-navigation .nav-item.selected {
+            color: #0066cc;
+            font-weight: bold;
+        }
+        
+        .category-navigation .nav-item-wrapper {
+            display: flex;
+            align-items: center;
+        }
+        
+        .category-navigation .nav-item .icon-arrow-down {
+            margin-left: 5px;
+            font-size: 0.8em;
+        }
+        
+        /* Promotional banner */
+        .promo-banner {
+            background: #f8f9fa;
+            margin-bottom: 30px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .promo-link {
+            display: block;
+            padding: 15px;
+            text-align: center;
+            color: #333;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        /* Footer styles */
+        .site-footer {
+            background-color: #f8f9fa;
+            padding: 40px 0 20px;
+            margin-top: 40px;
+            border-top: 1px solid #e7e7e7;
+        }
+        
+        .footer-section {
+            margin-bottom: 30px;
+        }
+        
+        .awards-grid, .payment-methods {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .award-item, .payment-method {
+            margin: 0;
+        }
+        
+        .app-section {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .download-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .btn-app-store img, .btn-google-play img {
+            height: 40px;
+            width: auto;
+        }
+        
+        .app-qr img {
+            max-width: 120px;
+            margin: 0 auto;
+            display: block;
+        }
+        
+        .footer-nav {
+            margin: 30px 0;
+        }
+        
+        .footer-nav-heading {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: #333;
+            cursor: pointer;
+        }
+        
+        .footer-nav-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .footer-nav-list li {
+            margin-bottom: 8px;
+        }
+        
+        .footer-nav-list a {
+            color: #666;
+            text-decoration: none;
+        }
+        
+        .footer-nav-list a:hover {
+            color: #333;
+            text-decoration: underline;
+        }
+        
+        .copyright-section {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #e7e7e7;
+            color: #666;
+        }
+        
+        .legal-notice {
+            font-size: 0.9rem;
+            margin-top: 15px;
+            color: #999;
+        }
+        
+        /* Accessibility improvements */
+        [aria-current="page"] {
+            font-weight: bold;
+            text-decoration: underline;
+        }
+        
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 767px) {
+            .navbar-form {
+                margin: 10px 0;
+                width: 100%;
+            }
+            
+            .app-section .row > div {
+                text-align: center;
+                margin-bottom: 20px;
+            }
+            
+            .download-buttons {
+                justify-content: center;
+            }
+            
+            .footer-nav .row > div {
+                margin-bottom: 25px;
+            }
+            
+            .category-navigation .swiper-slide {
+                padding: 0 10px;
+            }
+            
+            .footer-nav-list {
+                display: none;
+            }
+            
+            .footer-nav-list.active {
+                display: block;
+            }
+        }
+    </style>
 {% endblock %}
 {% block scripts %}
     {{ super() }}
     {{ moment.include_moment() }}
     {{ moment.lang(g.locale) }}
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <script>
+        // Initialize Swipers after DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Category navigation swiper
+            var categorySwiper = new Swiper('.category-navigation .swiper-container', {
+                slidesPerView: 'auto',
+                spaceBetween: 10,
+                freeMode: true,
+                grabCursor: true,
+                mousewheel: {
+                    forceToAxis: true
+                }
+            });
+            
+            // Promo banner swiper (even though only one slide)
+            var promoBanner = new Swiper('.promo-banner', {
+                autoplay: {
+                    delay: 5000,
+                    disableOnInteraction: false
+                },
+                loop: true,
+                effect: 'fade',
+                fadeEffect: {
+                    crossFade: true
+                }
+            });
+            
+            // Update cart count dynamically
+            function updateCartCount() {
+                fetch('{{ url_for("set_coupon") }}')
+                    .then(response => {
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        return response.json();
+                    })
+                    .then(data => {
+                        const badge = document.querySelector('.cart-link .badge');
+                        if (badge) {
+                            badge.textContent = data.count;
+                            badge.setAttribute('aria-label', 
+                                data.count === 1 ? '{{ _("1 item in cart") }}' : 
+                                '{{ _("%(count)s items in cart", count="") }}'.replace('%(count)s', data.count));
+                        }
+                    })
+                    .catch(error => console.error('Error fetching cart count:', error));
+            }
+            
+            // Check for cart updates every 30 seconds
+            setInterval(updateCartCount, 30000);
+            
+            // Mobile footer navigation toggle
+            if (window.innerWidth < 768) {
+                const footerNavHeadings = document.querySelectorAll('.footer-nav-heading');
+                footerNavHeadings.forEach(heading => {
+                    const list = heading.nextElementSibling;
+                    heading.setAttribute('aria-expanded', 'false');
+                    heading.addEventListener('click', function() {
+                        const isExpanded = this.getAttribute('aria-expanded') === 'true';
+                        this.setAttribute('aria-expanded', !isExpanded);
+                        list.style.display = isExpanded ? 'none' : 'block';
+                        list.classList.toggle('active');
+                    });
+                });
+            }
+            
+            // Add error handling for images
+            document.querySelectorAll('img').forEach(img => {
+                img.addEventListener('error', function() {
+                    if (this.dataset.fallback) {
+                        this.src = this.dataset.fallback;
+                    }
+                });
+            });
+        });
+    </script>
 {% endblock %}

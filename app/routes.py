@@ -310,7 +310,7 @@ def set_orderstatus():
     return render_template('set_orderstatus.html.j2', title=_('orderstatus'),
                            form=form, user=user)
 
-@app.route('/set_cart', methods=['GET', 'POST'])
+@app.route('/set_cart', methods=['GET', 'POST'], endpoint='cart')  # 添加 endpoint='cart'
 @login_required
 def set_cart():
     form = CartForm()
@@ -319,7 +319,7 @@ def set_cart():
         db.session.add(cart_item)
         db.session.commit()
         flash(_('Your changes have been saved.'))
-        return redirect(url_for('index'))
+        return redirect(url_for('cart'))  
     return render_template('set_cart.html.j2', title=_('Set Cart'), form=form)
 
 @app.route('/set_coupon', methods=['GET', 'POST'])
@@ -345,3 +345,32 @@ def set_customer_order():
         flash(_('Your order has been created.'))
         return redirect(url_for('index'))
     return render_template('set_customer_order.html.j2', title=_('Set Customer Order'), form=form)
+
+@app.route('/search')
+def search():
+    query = request.args.get('q', '')
+    
+    if query:
+        # Basic search using SQLAlchemy's ilike (case-insensitive)
+        results = Post.query.filter(
+            Post.title.ilike(f'%{query}%') | 
+            Post.content.ilike(f'%{query}%')
+        ).all()
+    else:
+        results = []
+    
+    return render_template('search.html.j2', title=_('Search Results'),results=results, query=query)
+
+@app.route('/product_sale', methods=['GET'])
+@login_required
+def product_sale():
+    # 示例：返回特惠商品頁面
+    products = Product.query.filter(Product.is_on_sale == True).all()
+    return render_template('product_sale.html.j2', title=_('Product Sale'), products=products)
+
+@app.route('/product_new', methods=['GET'])
+@login_required
+def product_new():
+    # 示例：返回最新商品頁面
+    products = Product.query.order_by(Product.created_at.desc()).all()
+    return render_template('product_new.html.j2', title=_('New Products'), products=products)

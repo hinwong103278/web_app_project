@@ -1,45 +1,397 @@
 {% extends "base.html.j2" %}
 {% import 'bootstrap/wtf.html' as wtf %}
+
+{% block styles %}
+    {{ super() }}
+    <style>
+    /* 自定義樣式 */
+    .hover-scale {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .hover-scale:hover {
+        transform: scale(1.03);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15)!important;
+    }
+
+    .card-clickable {
+        cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+    .card-clickable:active {
+        transform: scale(0.98);
+    }
+
+    .lazyload {
+        background: #f8f9fa;
+        min-height: 200px;
+    }
+
+    @media (max-width: 768px) {
+        .category-btn {
+            margin-bottom: 0.75rem;
+            width: 100%;
+        }
+        .carousel-caption {
+            display: none!important;
+        }
+    }
+* {box-sizing: border-box}
+body {font-family: Verdana, sans-serif; margin:0}
+.mySlides {display: none}
+img {vertical-align: middle;}
+
+/* Slideshow container */
+.slideshow-container {
+  max-width: 1000px;
+  position: relative;
+  margin: auto;
+}
+
+/* Next & previous buttons */
+.prev, .next {
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  width: auto;
+  padding: 16px;
+  margin-top: -22px;
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+  transition: 0.6s ease;
+  border-radius: 0 3px 3px 0;
+  user-select: none;
+}
+
+/* Position the "next button" to the right */
+.next {
+  right: 0;
+  border-radius: 3px 0 0 3px;
+}
+
+/* On hover, add a black background color with a little bit see-through */
+.prev:hover, .next:hover {
+  background-color: rgba(0,0,0,0.8);
+}
+
+/* Caption text */
+.text {
+  color: #f2f2f2;
+  font-size: 15px;
+  padding: 8px 12px;
+  position: absolute;
+  bottom: 8px;
+  width: 100%;
+  text-align: center;
+}
+
+/* Number text (1/3 etc) */
+.numbertext {
+  color: #f2f2f2;
+  font-size: 12px;
+  padding: 8px 12px;
+  position: absolute;
+  top: 0;
+}
+
+/* The dots/bullets/indicators */
+.dot {
+  cursor: pointer;
+  height: 15px;
+  width: 15px;
+  margin: 0 2px;
+  background-color: #bbb;
+  border-radius: 50%;
+  display: inline-block;
+  transition: background-color 0.6s ease;
+}
+
+.active, .dot:hover {
+  background-color: #717171;
+}
+
+/* Fading animation */
+.fade {
+  animation-name: fade;
+  animation-duration: 1.5s;
+}
+
+@keyframes fade {
+  from {opacity: .4} 
+  to {opacity: 1}
+}
+
+/* On smaller screens, decrease text size */
+@media only screen and (max-width: 300px) {
+  .prev, .next,.text {font-size: 11px}
+}
+    </style>
+{% endblock %}
 {% block app_content %}
-    <h1>{{ _('Hi, %(username)s!', username=current_user.username) }}</h1>
-    {% if form %}
-        {{ wtf.quick_form(form) }}
-        <br/>
-    {% endif %}
-    {% for post in posts %}
-        {% include "_post.html.j2" %}
-    {% endfor %}
-    <nav aria-label="...">
-        <ul class="pager">
-            <li class="previous{% if not prev_url %} disabled{% endif %}">
-                <a href="{{ prev_url or '#' }}">
-                    <span aria-hidden="true">&larr;</span> {{ _('Newer posts') }}
+    <!-- 推廣廣告 -->
+    <div class="slideshow-container">
+        <div class="mySlides fade">
+            <div class="numbertext"></div>
+            <img src="https://api.pns.hk/medias/HB-EarthDayXKao-20250430-C.png?context=bWFzdGVyfGltYWdlc3wzODc2OTB8aW1hZ2UvcG5nfGFETXdMMmczWWk4eE1UYzVOamsyTkRNME16Z3pPQzlJUWw5RllYSjBhRVJoZVZoTFlXOWZNakF5TlRBME16QmZReTV3Ym1jfDMwNmZhMmYxN2E5MjA1MWMyMTFjZWE3MzQ3NDUyYWQ0Y2MwZjhhMWI2MDY2M2FiZDFmNDk2YmZkNmQzYWM5MjI"
+                 style="width:100%">
+            <div class="text"></div>
+        </div>
+        <div class="mySlides fade">
+            <div class="numbertext"></div>
+            <img src="https://api.pns.hk/medias/HB-Food-WatsonXPNS-ShoppingGuide-C.png?context=bWFzdGVyfGltYWdlc3wxODU1NTZ8aW1hZ2UvcG5nfGFETmxMMmcxTUM4eE1UTTJPVEV4TWpJM01qa3lOaTlJUWw5R2IyOWtYMWRoZEhOdmJsaFFUbE5mVTJodmNIQnBibWRIZFdsa1pWOURMbkJ1Wnd8NzFhYzg5YWI5NjIzZGYwY2I4ZDlmMmI2OGYzNTFlZDI4MmM1MzVhYjE1MmE1MTAxZDc3Zjc0OWJhMTMzYWE0YQ"
+                 style="width:100%">
+            <div class="text"></div>
+        </div>
+        <div class="mySlides fade">
+            <div class="numbertext"></div>
+            <img src="https://api.pns.hk/medias/Herobanner-C.png?context=bWFzdGVyfGltYWdlc3wxMDc5OTV8aW1hZ2UvcG5nfGFEZzFMMmhpTVM4eE1USTROVEU0TWpjM05UTXlOaTlJWlhKdlltRnVibVZ5WDBNdWNHNW58MDJmZmRhYjJmMzYxMWIwNDNmMmY5NzhhNzUzNjE3MjE1YjUzZTE0MDM2M2FkMTNhNTk3NDIxMjk3YzYwZmU0MQ"
+                 style="width:100%">
+            <div class="text"></div>
+        </div>
+        <a class="prev" onclick="plusSlides(-1)"><</a>
+        <a class="next" onclick="plusSlides(1)">></a>
+    </div>
+    <br>
+    <div style="text-align:center">
+        <span class="dot" onclick="currentSlide(1)"></span>
+        <span class="dot" onclick="currentSlide(2)"></span>
+        <span class="dot" onclick="currentSlide(3)"></span>
+    </div>
+    <!-- 主要內容區塊 -->
+    <div class="container-xl">
+        <!-- 推廣頻道 -->
+        <div class="container-xl">
+            <!-- 推廣頻道 -->
+            <section class="mb-5">
+                <div class="row row-cols-1 row-cols-md-3 g-4"
+                     style="display: flex;
+                            flex-wrap: nowrap">
+                    <!-- 銀行優惠頻道 -->
+                    <div class="col" style="flex: 1; min-width: 0;">
+                        <article class="card h-100 shadow-sm card-clickable">
+                            <a data-banner="clone_QuickLinkComponent1_00200029"
+                               href="https://www.pns.hk/zh-hk/promo/BankOffer"
+                               target="_self"
+                               class="text-decoration-none">
+                                <img src="https://api.pns.hk/medias/QL-Bank-Offer.png?context=bWFzdGVyfGltYWdlc3wxNjcwN3xpbWFnZS9wbmd8YUdNd0wyaGxaQzh4TURBeU1UZzBOekF3TnpJMk1pOVJURjlDWVc1cklFOW1abVZ5TG5CdVp3fDQ1ZDZkYmU1ZmNhMjgxODQyYjNjY2NiNDU0YjU2ODhmYmU5MTFmOGM5NmI4NjkwZDRhYTdhN2I0NDI0N2FmMDQ"
+                                     class="card-img-top object-fit-cover"
+                                     alt="信用卡優惠"
+                                     style="height: 40px;
+                                            object-fit: cover"
+                                     loading="lazy">
+                                <div class="card-body d-flex flex-column">
+                                    <h3 class="h5 card-title">信用卡優惠</h3>
+                                </div>
+                            </a>
+                        </article>
+                    </div>
+                    <!-- 網絡日誌頻道 -->
+                    <div class="col" style="flex: 1; min-width: 0;">
+                        <article class="card h-100 shadow-sm card-clickable">
+                            <a data-banner="comp_00014005"
+                               href="https://www.pns.hk/zh-hk/promo/lifestyle_story"
+                               target="_self"
+                               class="text-decoration-none">
+                                <img src="https://api.pns.hk/medias/QL-Blog-1.png?context=bWFzdGVyfGltYWdlc3wxNTM0OXxpbWFnZS9wbmd8YUdWaEwyaG1NUzh4TURBeU1UZzBOekUzTVRFd01pOVJURjlDYkc5blh6RXVjRzVufDM1MDI1Yzk4OWJiN2M2YzJlOGE4N2M3ZTgyNDAwZDBhNjdlMmZhZWE1ZDM3YmU3NWUwMzFiYjJjY2JmYmY1ZjA"
+                                     class="card-img-top object-fit-cover"
+                                     alt="網絡日誌"
+                                     style="height: 40px;
+                                            object-fit: cover"
+                                     loading="lazy">
+                                <div class="card-body d-flex flex-column">
+                                    <h3 class="h5 card-title">網絡日誌</h3>
+                                </div>
+                            </a>
+                        </article>
+                    </div>
+                    <!-- 可持續產品頻道 -->
+                    <div class="col" style="flex: 1; min-width: 0;">
+                        <article class="card h-100 shadow-sm card-clickable">
+                            <a data-banner="comp_00010007"
+                               href="https://www.pns.hk/zh-hk/promo/Sustainability"
+                               target="_self"
+                               class="text-decoration-none">
+                                <img src="https://api.pns.hk/medias/QL-Sustainability.png?context=bWFzdGVyfGltYWdlc3w0MDQyfGltYWdlL3BuZ3xhRGt3TDJnME1DOHhNREExTVRNMk1qVTFNemc0Tmk5UlRGOVRkWE4wWVdsdVlXSnBiR2wwZVM1d2JtY3w4YTYzMDRkMTE0NzY1OTllNzViMzA2ZmU1MjliYTE4MTRhZWE1ZmIxZTkwNmM0MzUyYzExZDA2N2RjYjc3NzJh"
+                                     class="card-img-top object-fit-cover"
+                                     alt="可持續產品"
+                                     style="height: 40px;
+                                            object-fit: cover"
+                                     loading="lazy">
+                                <div class="card-body d-flex flex-column">
+                                    <h3 class="h5 card-title">可持續產品</h3>
+                                </div>
+                            </a>
+                        </article>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</section>
+<!-- 限時特惠 -->
+<section class="mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="display-5 fw-bold mb-0">易賞價</h2>
+        <a href="{{ url_for('product_sale') }}"
+           class="btn btn-link text-decoration-none">
+            查看更多 <i class="bi bi-chevron-right"></i>
+        </a>
+    </div>
+    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4">
+        {% for product in discounted_products %}
+            <div class="col">{{ product_card(product, show_discount=true) }}</div>
+        {% else %}
+            <div class="col-12 text-center text-muted py-5">
+                <i class="bi bi-tag fs-1"></i>
+                <p class="mt-2">目前沒有特惠商品</p>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+<!-- 新貨上架 -->
+<section class="mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="display-5 fw-bold mb-0">新貨上架</h2>
+        <a href="{{ url_for('product_new') }}"
+           class="btn btn-link text-decoration-none">
+            查看更多 <i class="bi bi-chevron-right"></i>
+        </a>
+    </div>
+    <div class="row row-cols-3 row-cols-sm-4 row-cols-md-5 row-cols-lg-6 g-3">
+        {% for product in new_arrivals %}<div class="col">{{ product_card(product) }}</div>{% endfor %}
+    </div>
+</section>
+<!-- 焦點推介 -->
+<section class="mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="display-5 fw-bold mb-0">焦點推介</h2>
+        <a href="{{ url_for('set_product') }}"
+           class="btn btn-link text-decoration-none">
+            查看更多 <i class="bi bi-chevron-right"></i>
+        </a>
+    </div>
+    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4">
+        {% for product in set_product %}
+            <div class="col">{{ product_card(product) }}</div>
+        {% else %}
+            <div class="col-12 text-center text-muted py-5">
+                <i class="bi bi-star fs-1"></i>
+                <p class="mt-2">目前沒有焦點推介商品</p>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+<!-- 商品分類 -->
+<section class="mb-5">
+    <h2 class="mb-4 display-5 fw-bold text-center">商品分類</h2>
+    <div class="d-flex flex-wrap gap-3 justify-content-center">
+        {% for category in categories %}
+            <a href="{{ category.url }}"
+               class="btn btn-outline-secondary rounded-pill px-4 py-2 d-flex align-items-center category-btn">
+                <i class="{{ category.icon }} me-2 fs-5"></i>
+                <span class="fw-medium">{{ category.name }}</span>
+            </a>
+        {% endfor %}
+    </div>
+</section>
+<!-- 品牌專區 -->
+<section class="mb-5">
+    <h2 class="mb-4 display-5 fw-bold text-center">品牌精選</h2>
+    <div class="row row-cols-3 row-cols-md-4 row-cols-lg-6 g-4 align-items-center">
+        {% for brand in brands %}
+            <div class="col">
+                <a href="{{ brand.url }}"
+                   class="d-block p-3 bg-white rounded-3 shadow-sm hover-scale">
+                    <img src="{{ brand.logo }}"
+                         alt="{{ brand.name }}"
+                         class="img-fluid object-fit-contain brand-logo"
+                         style="height: 80px"
+                         loading="lazy"
+                         onerror="this.onerror=null;this.src='{{ url_for('static', filename='images/brand-placeholder.png') }}">
                 </a>
-            </li>
-            <li class="next{% if not next_url %} disabled{% endif %}">
-                <a href="{{ next_url or '#' }}">
-                    {{ _('Older posts') }} <span aria-hidden="true">&rarr;</span>
-                </a>
-            </li>
-        </ul>
-    </nav>
-    {% block payment %}
-        {% if current_user.username == "Admin"%}
-            <li>
-                <a href="{{ url_for('payment') }}">{{ _('setpayment') }}</a>
-            </li>
-            <li>
-                <a href="{{ url_for('shippingAddress') }}">{{ _('setshippingAddress') }}</a>
-            </li>
-            <li>
-                <a href="{{ url_for('product') }}">{{ _('Product') }}</a>
-            </li>
-            <li>
-                <a href="{{ url_for('category') }}">{{ _('Category') }}</a>
-            </li>
-            <li>
-                <a href="{{ url_for('brand') }}">{{ _('Brand') }}</a>
-            </li>
-        {% endif %}
-    {% endblock %}
+            </div>
+        {% endfor %}
+    </div>
+</section>
+</div>
+{% endblock %}
+{% block scripts %}
+    {{ super() }}
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 圖片懶加載
+    const lazyLoad = (targets) => {
+        const io = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    img.src = img.dataset.src;
+                    img.classList.remove('lazyload');
+                    observer.unobserve(img);
+                }
+            });
+        });
+
+        targets.forEach(img => {
+            io.observe(img);
+        });
+    };
+
+    lazyLoad(document.querySelectorAll('.lazyload'));
+
+    // 卡片點擊處理
+    document.body.addEventListener('click', function(e) {
+        const card = e.target.closest('.card-clickable');
+        if (card) {
+            const link = card.querySelector('a.stretched-link');
+            if (link) {
+                window.location.href = link.href;
+            }
+        }
+    });
+
+    // 分類按鈕追蹤
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'select_category', {
+                    'category_name': this.querySelector('span').textContent.trim()
+                });
+            }
+        });
+    });
+
+    let slideIndex = 1;
+    showSlides(slideIndex);
+
+    function plusSlides(n) {
+        showSlides(slideIndex += n);
+    }
+
+    function currentSlide(n) {
+        showSlides(slideIndex = n);
+    }
+
+    function showSlides(n) {
+        let i;
+        let slides = document.getElementsByClassName("mySlides");
+        let dots = document.getElementsByClassName("dot");
+        if (n > slides.length) {slideIndex = 1}    
+        if (n < 1) {slideIndex = slides.length}
+        for (i = 0; i < slides.length; i++) {
+            slides[i].style.display = "none";  
+        }
+        for (i = 0; i < dots.length; i++) {
+            dots[i].className = dots[i].className.replace(" active", "");
+        }
+        slides[slideIndex-1].style.display = "block";  
+        dots[slideIndex-1].className += " active";
+        
+        // Auto slide change every 5 seconds
+        setTimeout(() => {
+            plusSlides(1);
+        }, 5000);
+    }
+}); 
+    </script>
 {% endblock %}
