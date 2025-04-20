@@ -3,37 +3,36 @@
     {{ title }} - PNS
     {% if not title %}{{ _('Welcome to PNS') }}{% endif %}
 {% endblock %}
-
 {% block navbar %}
-<nav class="navbar navbar-default">
-    <div class="container">
-        <!-- Promotional banner -->
-        <div class="promo-banner swiper-container">
-            <div class="swiper-wrapper">
-                <div class="swiper-slide">
-                    ⭐{{ _('Free delivery on orders over $350') }}
+    <nav class="navbar navbar-default">
+        <div class="container">
+            <!-- Promotional banner -->
+            <div class="promo-banner swiper-container">
+                <div class="swiper-wrapper">
+                    <div class="swiper-slide">⭐{{ _('Free delivery on orders over $350') }}</div>
                 </div>
             </div>
-        </div>
-        
-        <div class="navbar-header">
-            <!-- Main navigation -->
-            <a href="{{ url_for('index') }}" class="navbar-brand">
-                <img src="https://api.pns.hk/medias/PNS-logo-2X.png?context=bWFzdGVyfHBuc2hrL2ltYWdlc3w4MDE0fGltYWdlL3BuZ3xhREZsTDJnNU5DOHhNRFl4TmprNU9EazROVGMxT0M5UVRsTmZiRzluYjE4eVdDNXdibWN8Nzg4ODYyOWY1NDEwM2VhMjNkMjJiN2M5ODkxMzQzMjVkYWNkMWQ1NWJhMDk5OWIwZTgzMGViMGE2YzljNTllZQ"
-                     alt="PNS Logo"
-                     loading="lazy">
-            </a>
-            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main-navbar" aria-expanded="false">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-        </div>
-
-        <div class="collapse navbar-collapse" id="main-navbar">
-            <!-- Search form -->
-            <form class="navbar-form navbar-left"
+            <div class="navbar-header">
+                <!-- Main navigation -->
+                <a href="{{ url_for('index') }}" class="navbar-brand">
+                    <img src="https://api.pns.hk/medias/PNS-logo-2X.png?context=bWFzdGVyfHBuc2hrL2ltYWdlc3w4MDE0fGltYWdlL3BuZ3xhREZsTDJnNU5DOHhNRFl4TmprNU9EazROVGMxT0M5UVRsTmZiRzluYjE4eVdDNXdibWN8Nzg4ODYyOWY1NDEwM2VhMjNkMjJiN2M5ODkxMzQzMjVkYWNkMWQ1NWJhMDk5OWIwZTgzMGViMGE2YzljNTllZQ"
+                         alt="PNS Logo"
+                         loading="lazy">
+                </a>
+                <button type="button"
+                        class="navbar-toggle collapsed"
+                        data-toggle="collapse"
+                        data-target="#main-navbar"
+                        aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+            </div>
+            <div class="collapse navbar-collapse" id="main-navbar">
+                <!-- Search form -->
+                <form class="navbar-form navbar-left"
                       role="search"
                       action="{{ url_for('search') }}"
                       method="GET">
@@ -56,46 +55,69 @@
                         <span class="glyphicon glyphicon-search"></span>
                     </button>
                 </form>
-            <!-- Right side navigation -->
-            <ul class="nav navbar-nav navbar-right">
-                <!-- Language selector -->
-                <li class="dropdown">
-                    <a href="#"
-                       class="dropdown-toggle"
-                       data-toggle="dropdown"
-                       role="button"
-                       aria-haspopup="true"
-                       aria-expanded="false">
-                        {{ g.locale }} <span class="caret"></span>
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a href="/en/">English</a></li>
-                        <li><a href="/zh-hk/">繁體中文</a></li>
-                    </ul>
-                </li>
-                
-                <!-- User account -->
-                {% if current_user.is_anonymous %}
-                    <li><a href="{{ url_for('login') }}">{{ _('Login') }}</a></li>
-                {% else %}
-                    <li><a href="{{ url_for('user', username=current_user.username) }}">{{ _('Profile') }}</a></li>
-                    <li><a href="{{ url_for('logout') }}">{{ _('Logout') }}</a></li>
-                {% endif %}
-                
-                <!-- Shopping cart -->
-                <li>
-                    <a href="{{ url_for('cart') }}"
-                       class="cart-link"
-                       aria-label="{{ _('Shopping cart') }}"
-                       data-cart-count="{{ cart_item_count }}">
-                        <span class="glyphicon glyphicon-shopping-cart"></span>
-                        <span class="badge">{{ cart_item_count }}</span>
-                    </a>
-                </li>
-            </ul>
+                <!-- Right side navigation -->
+                <ul class="nav navbar-nav navbar-right">
+                    <!-- Language selector -->
+                    <li class="dropdown">
+                        <a href="#"
+                           class="dropdown-toggle"
+                           data-toggle="dropdown"
+                           role="button"
+                           aria-haspopup="true"
+                           aria-expanded="false">
+                            {{ g.locale }} <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a href="/en/">English</a>
+                            </li>
+                            <li>
+                                <a href="/zh-hk/">繁體中文</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <!--送貨上門-->
+                    <li class="dropdown">
+                        <li>
+                            <a href="{{ url_for('delivery') }}">
+                                <span class="glyphicon glyphicon-truck"></span>
+                                送貨上門
+                            </a>
+                        </li>
+                        <!-- wishlist -->
+                        <li>
+                            <a href="{{ url_for('wishlist') }}" aria-label="{{ _('Wishlist') }}">
+                                <span class="glyphicon glyphicon-heart"></span>
+                            </a>
+                        </li>
+                        <!-- User account -->
+                        {% if current_user.is_anonymous %}
+                            <li>
+                                <a href="{{ url_for('login') }}">{{ _('Login') }}</a>
+                            </li>
+                        {% else %}
+                            <li>
+                                <a href="{{ url_for('user', username=current_user.username) }}">{{ _('Profile') }}</a>
+                            </li>
+                            <li>
+                                <a href="{{ url_for('logout') }}">{{ _('Logout') }}</a>
+                            </li>
+                        {% endif %}
+                        <!-- Shopping cart -->
+                        <li>
+                            <a href="{{ url_for('cart') }}"
+                               class="cart-link"
+                               aria-label="{{ _('Shopping cart') }}"
+                               data-cart-count="{{ cart_item_count }}">
+                                <span class="glyphicon glyphicon-shopping-cart"></span>
+                                <span class="badge">{{ cart_item_count }}</span>
+                            </a>
+                        </li>
+                    </li>
+                </ul>
+            </div>
         </div>
-    </div>
-</nav>
+    </nav>
 <!-- Category Navigation Tabs -->
 <div class="category-navigation">
     <div class="container">
@@ -407,12 +429,18 @@
     {{ super() }}
     <link rel="stylesheet"
           href="https://unpkg.com/swiper/swiper-bundle.min.css">
-    <style>
+   <style>
         /* Base styles */
         .navbar {
             min-height: 70px;
             margin-bottom: 0;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background-color: #0066cc; /* 新增：蓝色背景 */
+            color: white; /* 新增：文字颜色 */
+        }
+        
+        .navbar a {
+            color: rgba(255,255,255,0.9) !important; /* 新增：导航链接颜色 */
         }
         
         .navbar-brand img {
@@ -423,9 +451,9 @@
         
         /* Category Navigation */
         .category-navigation {
-            background-color: #f8f9fa;
-            border-top: 1px solid #e7e7e7;
-            border-bottom: 1px solid #e7e7e7;
+            background-color: #e3f2fd; /* 修改为浅蓝色 */
+            border-top: 1px solid #b3d9ff;
+            border-bottom: 1px solid #b3d9ff;
             padding: 10px 0;
         }
         
@@ -480,12 +508,13 @@
             font-weight: bold;
         }
         
-        /* Footer styles */
+        /* 修改后的页脚样式 */
         .site-footer {
-            background-color: #f8f9fa;
+            background-color: #333; /* 浅黑色背景 */
             padding: 40px 0 20px;
             margin-top: 40px;
-            border-top: 1px solid #e7e7e7;
+            border-top: 1px solid #444; /* 调整边框颜色 */
+            color: #ccc; /* 文字颜色 */
         }
         
         .footer-section {
@@ -505,10 +534,10 @@
         }
         
         .app-section {
-            background-color: #fff;
+            background-color: rgba(255,255,255,0.1); /* 半透明白色 */
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         
         .download-buttons {
@@ -535,7 +564,7 @@
         .footer-nav-heading {
             font-size: 1.1rem;
             margin-bottom: 15px;
-            color: #333;
+            color: #fff; /* 白色标题 */
             cursor: pointer;
         }
         
@@ -549,26 +578,26 @@
         }
         
         .footer-nav-list a {
-            color: #666;
+            color: #ccc !important; /* 浅灰色链接 */
             text-decoration: none;
         }
         
         .footer-nav-list a:hover {
-            color: #333;
+            color: #fff !important;
             text-decoration: underline;
         }
         
         .copyright-section {
             text-align: center;
             padding-top: 20px;
-            border-top: 1px solid #e7e7e7;
-            color: #666;
+            border-top: 1px solid #444; /* 调整边框颜色 */
+            color: #999;
         }
         
         .legal-notice {
             font-size: 0.9rem;
             margin-top: 15px;
-            color: #999;
+            color: #888;
         }
         
         /* Accessibility improvements */
@@ -619,8 +648,13 @@
             .footer-nav-list.active {
                 display: block;
             }
+
+            /* 移动端颜色适配 */
+            .category-navigation {
+                background-color: #f0f8ff; /* 更浅的蓝色 */
+            }
         }
-    </style>
+</style>
 {% endblock %}
 {% block scripts %}
     {{ super() }}

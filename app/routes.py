@@ -361,16 +361,12 @@ def search():
     
     return render_template('search.html.j2', title=_('Search Results'),results=results, query=query)
 
-@app.route('/product_sale', methods=['GET'])
+@app.route('/wishlist')
 @login_required
-def product_sale():
-    # 示例：返回特惠商品頁面
-    products = Product.query.filter(Product.is_on_sale == True).all()
-    return render_template('product_sale.html.j2', title=_('Product Sale'), products=products)
+def wishlist():
+    return render_template('wishlist.html.j2')
 
-@app.route('/product_new', methods=['GET'])
+@app.route('/delivery')
 @login_required
-def product_new():
-    # 示例：返回最新商品頁面
-    products = Product.query.order_by(Product.created_at.desc()).all()
-    return render_template('product_new.html.j2', title=_('New Products'), products=products)
+def delivery():
+    return render_template('delivery.html.j2', title=_('Delivery'))
