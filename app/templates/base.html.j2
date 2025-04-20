@@ -33,20 +33,29 @@
 
         <div class="collapse navbar-collapse" id="main-navbar">
             <!-- Search form -->
-            <form class="navbar-form navbar-left" role="search">
-                <div class="form-group">
-                    <input type="text"
-                           class="form-control"
-                           placeholder="{{ _('Search') }}"
-                           aria-label="{{ _('Search') }}">
-                </div>
-                <button type="submit"
-                        class="btn btn-default"
-                        aria-label="{{ _('Submit search') }}">
-                    <span class="glyphicon glyphicon-search"></span>
-                </button>
-            </form>
-            
+            <form class="navbar-form navbar-left"
+                      role="search"
+                      action="{{ url_for('search') }}"
+                      method="GET">
+                    <div class="form-group">
+                        <input type="text"
+                               class="form-control"
+                               name="q"
+                               --
+                               q
+                               is
+                               the
+                               query
+                               parameter
+                               name
+                               -->
+                    </div>
+                    <button type="submit"
+                            class="btn btn-default"
+                            aria-label="{{ _('Submit search') }}">
+                        <span class="glyphicon glyphicon-search"></span>
+                    </button>
+                </form>
             <!-- Right side navigation -->
             <ul class="nav navbar-nav navbar-right">
                 <!-- Language selector -->
