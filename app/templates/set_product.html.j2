@@ -1,8 +1,29 @@
 {% extends "base.html.j2" %}
 {% import 'bootstrap/wtf.html' as wtf %}
 {% block app_content %}
-    <h1>{{ _('Product') }}</h1>
-    <div class="row">
-        <div class="col-md-4">{{ wtf.quick_form(form) }}</div>
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for product in products %}
+    <div class="col">
+        <div class="card h-100">
+            <img src="{{ product.main_image }}" class="card-img-top" alt="{{ product.name }}">
+            <div class="card-body">
+                <h5 class="card-title">{{ product.name }}</h5>
+                <p class="card-text text-muted">{{ product.description|truncate(100) }}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class=d"h4 text-danger">${{ product.price }}</span>
+                    <span class="badge bg-secondary">{{ product.stock }}件库存</span>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('product_detail', id=product.id) }}" class="btn btn-primary">
+                    查看详情
+                </a>
+            </div>
+        </div>
     </div>
+    {% else %}
+    <div class="col-12">
+        <div class="alert alert-warning">没有找到符合条件的商品</div>
+    </div>
+    {% endfor %}
 {% endblock %}

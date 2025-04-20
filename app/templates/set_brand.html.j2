@@ -1,107 +1,15 @@
 {% extends "base.html.j2" %}
 {% import 'bootstrap/wtf.html' as wtf %}
-
 {% block app_content %}
-    <h1>{{ _('Brand') }}</h1>
-    
-    <!-- Brand Showcase Section -->
-    <section class="mb-5">
-        <h2 class="mb-4 display-5 fw-bold text-center">
-            {{ _('Brand Selection') }}
-        </h2>
-        <div class="row row-cols-3 row-cols-md-4 row-cols-lg-6 g-4 align-items-center">
-            <!-- Brand 1 -->
-            <div class="col">
-                <a href="{{ url_for('brand_products', brand_id=1) }}"
-                   class="d-block p-3 bg-white rounded-3 shadow-sm hover-scale">
-                    <img src="https://api.pns.hk/medias/Brand-Logo-Kao.png"
-                         alt="Kao"
-                         class="img-fluid object-fit-contain brand-logo"
-                         style="height: 80px"
-                         loading="lazy">
-                </a>
-            </div>
-            
-            <!-- Brand 2 -->
-            <div class="col">
-                <a href="{{ url_for('brand_products', brand_id=2) }}"
-                   class="d-block p-3 bg-white rounded-3 shadow-sm hover-scale">
-                    <img src="https://api.pns.hk/medias/Brand-Logo-Pampers.png"
-                         alt="Pampers"
-                         class="img-fluid object-fit-contain brand-logo"
-                         style="height: 80px"
-                         loading="lazy">
-                </a>
-            </div>
-            
-            <!-- Brand 3 -->
-            <div class="col">
-                <a href="{{ url_for('brand_products', brand_id=3) }}"
-                   class="d-block p-3 bg-white rounded-3 shadow-sm hover-scale">
-                    <img src="https://api.pns.hk/medias/Brand-Logo-Olay.png"
-                         alt="Olay"
-                         class="img-fluid object-fit-contain brand-logo"
-                         style="height: 80px"
-                         loading="lazy">
-                </a>
-            </div>
-            
-            <!-- Brand 4 -->
-            <div class="col">
-                <a href="{{ url_for('brand_products', brand_id=4) }}"
-                   class="d-block p-3 bg-white rounded-3 shadow-sm hover-scale">
-                    <img src="https://api.pns.hk/medias/Brand-Logo-Gillette.png"
-                         alt="Gillette"
-                         class="img-fluid object-fit-contain brand-logo"
-                         style="height: 80px"
-                         loading="lazy">
-                </a>
-            </div>
-            
-            <!-- Brand 5 -->
-            <div class="col">
-                <a href="{{ url_for('brand_products', brand_id=5) }}"
-                   class="d-block p-3 bg-white rounded-3 shadow-sm hover-scale">
-                    <img src="https://api.pns.hk/medias/Brand-Logo-Pantene.png"
-                         alt="Pantene"
-                         class="img-fluid object-fit-contain brand-logo"
-                         style="height: 80px"
-                         loading="lazy">
-                </a>
-            </div>
-            
-            <!-- Brand 6 -->
-            <div class="col">
-                <a href="{{ url_for('brand_products', brand_id=6) }}"
-                   class="d-block p-3 bg-white rounded-3 shadow-sm hover-scale">
-                    <img src="https://api.pns.hk/medias/Brand-Logo-Rejoice.png"
-                         alt="Rejoice"
-                         class="img-fluid object-fit-contain brand-logo"
-                         style="height: 80px"
-                         loading="lazy">
-                </a>
-            </div>
+</div>
+        <div class="col-md-2">
+            <select class="form-select" name="brand">
+                <option value="">所有品牌</option>>
+                {% for brand in brands %}
+                <option value="{{ brand.id }}" {% if brand.id == current_brand %}selected{% endif %}>
+                    {{ brand.name }}
+                </option>
+                {% endfor %}
+            </select>
         </div>
-    </section>
-
-    <!-- Search/Filter Form -->
-    <div class="row">
-        <div class="col-md-4">
-            {{ wtf.quick_form(form) }}
-        </div>
-    </div>
-
-    <!-- Optional: Add some custom CSS for the hover effect -->
-    <style>
-        .hover-scale {
-            transition: transform 0.3s ease;
-        }
-        .hover-scale:hover {
-            transform: scale(1.05);
-            z-index: 1;
-        }
-        .brand-logo {
-            mix-blend-mode: multiply;
-        }
-    </style>
 {% endblock %}

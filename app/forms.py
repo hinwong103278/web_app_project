@@ -1,8 +1,8 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, \
-    TextAreaField, IntegerField, SelectField
+    TextAreaField, IntegerField, SelectField, DecimalField, FileField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, \
-    Length
+    Length, NumberRange
 from flask_babel import _, lazy_gettext as _l
 from app.models import User
 
@@ -81,12 +81,18 @@ class UserAddressForm(FlaskForm):
     UAddress = StringField(_l('enter the address in here'), validators=[DataRequired()])
     submit = SubmitField(_l('Submit'))
 
-class ProductForm(FlaskForm): 
-    name = StringField(_l('Product Name'), validators=[DataRequired()])
-    description = TextAreaField(_l('Description'))
-    price = IntegerField(_l('Price'), validators=[DataRequired()])
-    quantity = IntegerField(_l('Quantity'), validators=[DataRequired()], default=1)
-    submit = SubmitField(_l('Add to Cart'))
+class ProductForm(FlaskForm):
+    sku = StringField('SKU', validators=[DataRequired()])
+    name = StringField('Product Name', validators=[DataRequired()])
+    description = TextAreaField('Product Description')
+    price = DecimalField('Price', places=2, validators=[DataRequired(), NumberRange(min=0.01)])
+    stock = IntegerField('Stock', validators=[NumberRange(min=0)])
+    category = SelectField('Category', coerce=int)
+    brand = SelectField('Brand', coerce=int)
+    is_featured = BooleanField('Featured Product')
+    is_active = BooleanField('Active Status', default=True)
+    images = FileField('Product Images (Multiple)', render_kw={'multiple': True})
+    submit = SubmitField('Add to Cart')
 
 class CategoryForm(FlaskForm):
     name = StringField(_l('Category Name'), validators=[DataRequired()])

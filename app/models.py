@@ -109,11 +109,19 @@ class Payment(db.Model):
 class CustomerOrder(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.DateTime, default=datetime.utcnow)
-    items = db.relationship('Product', backref='author', lazy='dynamic')
+    items = db.relationship(
+        'Product',
+        backref='order',
+        lazy='dynamic',
+        foreign_keys='Product.customerorder_id'  # 指定外鍵
+    )
     Details = db.relationship('OrderDetails', backref='author', lazy='dynamic')
     status = db.relationship('OrderStatus', backref='author', lazy='dynamic')
     cost = db.Column(db.Float(9))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    def __repr__(self) -> str:
+        return f'<CustomerOrder {self.id}>'
 
 class ShippingAddresses(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -134,14 +142,25 @@ class Wishlist(db.Model):
     def __repr__(self) -> str:
         return f'<Wishlist {self.wishitem}>'
 
-class Product(db.Model):
+class Product(db.Model):    
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(140))
-    description = db.Column(db.String(140))
-    price = db.Column(db.Float)
-    image = db.Column(db.String(200))
+    sku = db.Column(db.String(50), unique=True, nullable=False)  # 商品编号
+    name = db.Column(db.String(200), nullable=False)            # 商品名称
+    description = db.Column(db.Text)                             # 详细描述
+    price = db.Column(db.Numeric(10,2), nullable=False)          # 价格
+    stock = db.Column(db.Integer, default=0)                     # 库存
+    main_image = db.Column(db.String(500))                      # 主图URL
+    is_featured = db.Column(db.Boolean, default=False)          # 是否推荐
+    is_active = db.Column(db.Boolean, default=True)             # 是否上架
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+    images = db.relationship('ProductImage', backref='product', cascade='all, delete-orphan')
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
+    category = db.relationship('Category', back_populates='products')
     brand_id = db.Column(db.Integer, db.ForeignKey('brand.id'))
+    brand = db.relationship('Brand', back_populates='products')
+    customerorder_id = db.Column(db.Integer, db.ForeignKey('customer_order.id'))
+    image = db.Column(db.String(200))
     reviews = db.relationship('ProductReview', backref='product', lazy='dynamic')
     order_id = db.Column(db.Integer, db.ForeignKey('customer_order.id'))
     Cart_items = db.relationship('Cart', backref='author', lazy='dynamic')
@@ -151,18 +170,18 @@ class Product(db.Model):
     
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(140))
-    description = db.Column(db.String(140))
-    products = db.relationship('Product', backref='category', lazy='dynamic')
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    slug = db.Column(db.String(100), unique=True)
+    products = db.relationship('Product', back_populates='category')
 
     def __repr__(self) -> str:
         return f'<Category {self.name}>'
     
 class Brand(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(140))
-    description = db.Column(db.String(140))
-    products = db.relationship('Product', backref='brand', lazy='dynamic')
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    logo = db.Column(db.String(500))
+    products = db.relationship('Product', back_populates='brand')
 
     def __repr__(self) -> str:
         return f'<Brand {self.name}>'
@@ -211,3 +230,12 @@ class Coupon(db.Model):
 
     def __repr__(self) -> str:
         return f'<Coupon {self.code}>'
+    
+class ProductImage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    url = db.Column(db.String(500), nullable=False)
+    is_main = db.Column(db.Boolean, default=False)  
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
+
+    def __repr__(self) -> str:
+        return f'<ProductImage {self.url}>'
