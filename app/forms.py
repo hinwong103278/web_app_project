@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, \
-    TextAreaField
+    TextAreaField, FloatField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, \
     Length
 from flask_babel import _, lazy_gettext as _l
@@ -79,4 +79,37 @@ class ShippingAddressesForm(FlaskForm):
 
 class UserAddressForm(FlaskForm):
     UAddress = StringField(_l('enter the address in here'), validators=[DataRequired()])
+    submit = SubmitField(_l('Submit'))
+
+class ProductForm(FlaskForm):
+    name = StringField(_l('Name'), validators=[DataRequired()])
+    price = FloatField(_l('Price'), validators=[DataRequired()])
+    description = StringField(_l('Description'), validators=[DataRequired()])
+    #brand = StringField(_l('enter the brand of product in here'), validators=[DataRequired()])
+    #cart = StringField(_l('enter the cart of product in here'), validators=[Data.Required()])
+    #Productreviews = StringField(_l('enter the reviews of product in here'), validators=[DataRequired()])
+    image = StringField(_l('Image URL'), validators=[DataRequired()])
+    submit = SubmitField(_l('Submit'))
+
+class CategoryForm(FlaskForm):
+    name = StringField(_l('enter the name of category in here'), validators=[DataRequired()])
+    brand = StringField(_l('enter the brand of category in here'), validators=[DataRequired()])
+    submit = SubmitField(_l('Submit'))
+
+class BrandForm(FlaskForm):
+    #productForm = StringField(_l('enter the name of product in here'), validators=[DataRequired()])
+    name = StringField(_l('enter the name of brand in here'), validators=[DataRequired()])
+    submit = SubmitField(_l('Submit'))
+
+class OrderdetailsForm(FlaskForm):
+    order = StringField(_l('enter the order in here'), validators=[DataRequired()])
+    submit = SubmitField(_l('Submit'))
+
+class ProductreviewsForm(FlaskForm):
+    review = StringField(_l('enter the review in here'), validators=[DataRequired()])
+    rating = StringField(_l('enter the rating in here'), validators=[DataRequired()])
+    submit = SubmitField(_l('Submit'))
+
+class OrderstatusForm(FlaskForm):
+    status = StringField(_l('enter the status in here'), validators=[DataRequired()])
     submit = SubmitField(_l('Submit'))

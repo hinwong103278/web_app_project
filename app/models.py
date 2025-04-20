@@ -128,3 +128,61 @@ class Wishlist(db.Model):
 
     def __repr__(self) -> str:
         return f'<Wishlist {self.wishitem}>'
+    
+class Product(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(140))
+    price = db.Column(db.Float)
+    description = db.Column(db.String(140))
+    image = db.Column(db.String(200))
+    category = db.Column(db.String(140))
+    stock = db.Column(db.Integer)
+    #wishlist = db.relationship('Wishlist', backref='author', lazy='dynamic')
+    #cart = db.relationship('Cart', backref='author', lazy='dynamic')
+    #order = db.relationship('Order', backref='author', lazy='dynamic')
+    
+    def __repr__(self) -> str:
+        return f'<Product {self.name}>'
+    
+class Category(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(140))
+    #product = db.relationship('Product', backref='category', lazy='dynamic')
+    
+    def __repr__(self) -> str:
+        return f'<Category {self.name}>'
+    
+class Brand(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(140))
+    #product = db.relationship('Product', backref='author', lazy='dynamic')
+    
+    def __repr__(self) -> str:
+        return f'<Brand {self.name}>'
+    
+class Productreviews(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    review = db.Column(db.String(140))
+    rating = db.Column(db.Integer)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    #product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
+    
+    def __repr__(self) -> str:
+        return f'<Productreviews {self.review}>'
+    
+class Orderdetails(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    quantity = db.Column(db.Integer)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
+    #order_id = db.Column(db.Integer, db.ForeignKey('oreder.id'))
+    
+    def __repr__(self) -> str:
+        return f'<Orderdetails {self.quantity}>'
+
+class Orderstatus(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    status = db.Column(db.String(140))
+    #order_id = db.Column(db.Integer, db.ForeignKey(''))
+    
+    def __repr__(self) -> str:
+        return f'<Orderstatus {self.status}>'
