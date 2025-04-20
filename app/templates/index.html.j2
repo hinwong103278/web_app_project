@@ -224,35 +224,43 @@
     </style>
 {% endblock %}
 {% block app_content %}
-    <!-- 推廣廣告 -->
-    <div class="slideshow-container">
-        <div class="mySlides fade">
-            <div class="numbertext"></div>
+   <!-- 推廣廣告 -->
+<div class="slideshow-container">
+    <!-- 輪播項 1 -->
+    <div class="mySlides fade">
+        <a href="https://www.pns.hk/zh-hk/promo/kao_CSR">
             <img src="https://api.pns.hk/medias/HB-EarthDayXKao-20250430-C.png?context=bWFzdGVyfGltYWdlc3wzODc2OTB8aW1hZ2UvcG5nfGFETXdMMmczWWk4eE1UYzVOamsyTkRNME16Z3pPQzlJUWw5RllYSjBhRVJoZVZoTFlXOWZNakF5TlRBME16QmZReTV3Ym1jfDMwNmZhMmYxN2E5MjA1MWMyMTFjZWE3MzQ3NDUyYWQ0Y2MwZjhhMWI2MDY2M2FiZDFmNDk2YmZkNmQzYWM5MjI"
                  style="width:100%">
-            <div class="text"></div>
-        </div>
-        <div class="mySlides fade">
-            <div class="numbertext"></div>
+        </a>
+    </div>
+
+    <!-- 輪播項 2 -->
+    <div class="mySlides fade">
+        <a href="https://www.pns.hk/zh-hk/promo/PNSxWATSONS_shopping_guide">
             <img src="https://api.pns.hk/medias/HB-Food-WatsonXPNS-ShoppingGuide-C.png?context=bWFzdGVyfGltYWdlc3wxODU1NTZ8aW1hZ2UvcG5nfGFETmxMMmcxTUM4eE1UTTJPVEV4TWpJM01qa3lOaTlJUWw5R2IyOWtYMWRoZEhOdmJsaFFUbE5mVTJodmNIQnBibWRIZFdsa1pWOURMbkJ1Wnd8NzFhYzg5YWI5NjIzZGYwY2I4ZDlmMmI2OGYzNTFlZDI4MmM1MzVhYjE1MmE1MTAxZDc3Zjc0OWJhMTMzYWE0YQ"
                  style="width:100%">
-            <div class="text"></div>
-        </div>
-        <div class="mySlides fade">
-            <div class="numbertext"></div>
+        </a>
+    </div>
+
+    <!-- 輪播項 3 -->
+    <div class="mySlides fade">
+        <a href="https://www.pns.hk/zh-hk/homedeliveryexpress">
             <img src="https://api.pns.hk/medias/Herobanner-C.png?context=bWFzdGVyfGltYWdlc3wxMDc5OTV8aW1hZ2UvcG5nfGFEZzFMMmhpTVM4eE1USTROVEU0TWpjM05UTXlOaTlJWlhKdlltRnVibVZ5WDBNdWNHNW58MDJmZmRhYjJmMzYxMWIwNDNmMmY5NzhhNzUzNjE3MjE1YjUzZTE0MDM2M2FkMTNhNTk3NDIxMjk3YzYwZmU0MQ"
                  style="width:100%">
-            <div class="text"></div>
-        </div>
-        <a class="prev" onclick="plusSlides(-1)"><</a>
-        <a class="next" onclick="plusSlides(1)">></a>
+        </a>
     </div>
-    <br>
-    <div style="text-align:center">
-        <span class="dot" onclick="currentSlide(1)"></span>
-        <span class="dot" onclick="currentSlide(2)"></span>
-        <span class="dot" onclick="currentSlide(3)"></span>
-    </div>
+
+    <!-- 導航按鈕 -->
+    <a class="prev" onclick="plusSlides(-1)"><</a>
+    <a class="next" onclick="plusSlides(1)">></a>
+</div>
+
+<!-- 指示點 -->
+<div style="text-align:center">
+    <span class="dot" onclick="currentSlide(1)"></span>
+    <span class="dot" onclick="currentSlide(2)"></span>
+    <span class="dot" onclick="currentSlide(3)"></span>
+</div>
     <!-- 主要內容區塊 -->
     <div class="container-xl">
         <!-- 推廣頻道 -->
