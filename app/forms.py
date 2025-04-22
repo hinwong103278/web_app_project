@@ -89,6 +89,8 @@ class ProductForm(FlaskForm):
     stock = IntegerField('Stock', validators=[NumberRange(min=0)])
     category = SelectField('Category', coerce=int)
     brand = SelectField('Brand', coerce=int)
+    brand_id = IntegerField('Brand ID', validators=[DataRequired()])
+    category_id = IntegerField('Category ID', validators=[DataRequired()])
     is_featured = BooleanField('Featured Product')
     is_active = BooleanField('Active Status', default=True)
     images = FileField('Product Images (Multiple)', render_kw={'multiple': True})

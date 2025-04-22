@@ -1,15 +1,58 @@
 {% extends "base.html.j2" %}
 {% import 'bootstrap/wtf.html' as wtf %}
+
 {% block app_content %}
-</div>
-        <div class="col-md-2">
-            <select class="form-select" name="brand">
-                <option value="">所有品牌</option>>
+<div class="row">
+    <div class="col-md-12">
+        <h2>品牌選擇</h2>
+        
+        <!-- 品牌選擇下拉菜單 -->
+        <form method="GET" class="mb-4">
+            <select class="form-select" name="brand" onchange="this.form.submit()">
+                <option value="">所有品牌</option>
                 {% for brand in brands %}
-                <option value="{{ brand.id }}" {% if brand.id == current_brand %}selected{% endif %}>
+                <option value="{{ brand.id }}" 
+                    {% if brand.id == current_brand %}selected{% endif %}>
                     {{ brand.name }}
                 </option>
                 {% endfor %}
             </select>
+        </form>
+        
+        <!-- 顯示當前選擇的品牌圖片 -->
+        {% if current_brand %}
+            <div class="text-center mb-4">
+                <a href="{{ url_for('products_by_brand', brand_id=current_brand) }}">
+                    <img src="{{ current_brand.logo_url }}" 
+                         alt="{{ current_brand.name }} 品牌logo" 
+                         class="img-fluid brand-logo" 
+                         style="max-height: 150px;">
+                </a>
+                <h3>{{ current_brand.name }}</h3>
+            </div>
+        {% endif %}
+        
+        <!-- 品牌產品列表 -->
+        <div class="row">
+            {% if products %}
+                {% for product in products %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card">
+                            <img src="{{ product.image_url }}" class="card-img-top" alt="{{ product.name }}">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ product.name }}</h5>
+                                <p class="card-text">價格: ${{ product.price }}</p>
+                                <a href="{{ url_for('product_detail', product_id=product.id) }}" class="btn btn-primary">查看詳情</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12">
+                    <p class="text-muted">沒有找到相關產品</p>
+                </div>
+            {% endif %}
         </div>
+    </div>
+</div>
 {% endblock %}

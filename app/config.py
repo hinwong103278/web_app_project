@@ -18,3 +18,15 @@ class Config(object):
     ADMINS = ['peter@example.com']
     POSTS_PER_PAGE = 3
     LANGUAGES = ['en', 'es', 'zh']
+
+    # File Uploads (for Product Images, Brand Logos, etc.)
+    UPLOAD_FOLDER = os.path.join(basedir, 'app/static/images')
+    ALLOWED_IMAGE_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif', 'avif'}
+    MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5MB limit
+
+    # Pagination (for Products, Brands, Categories, Orders, etc.)
+    PRODUCTS_PER_PAGE = 12
+    BRANDS_PER_PAGE = 10
+    CATEGORIES_PER_PAGE = 10
+    ORDERS_PER_PAGE = 10
+    REVIEWS_PER_PAGE = 5

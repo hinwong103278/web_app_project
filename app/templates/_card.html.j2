@@ -1,0 +1,38 @@
+{% macro product_card(product) %}
+<div class="product-card">
+    <div class="card" style="width: 18rem;">
+        <!-- Product Image -->
+        <img 
+            src="{{ product.image_url or url_for('static', filename='images/placeholder.png') }}" 
+            class="card-img-top" 
+            alt="{{ product.name }}"
+        >
+        
+        <!-- Product Details -->
+        <div class="card-body">
+            <h5 class="card-title">{{ product.name }}</h5>
+            <p class="price">${{ "%.2f"|format(product.price) }}</p>
+            
+            <!-- Add to Cart/View Details -->
+            <a 
+                href="{{ url_for('set_cart', product_id=product.id) }}" 
+                class="btn btn-success"
+            >
+                Add to Cart
+            </a>
+            <a 
+                href="{{ url_for('wishlist', product_id=product.id) }}" 
+                class="btn btn-warning"
+            >
+                Add to Wishlist
+            </a>
+            <a 
+                href="{{ url_for('product_detail', product_id=product.id) }}" 
+                class="btn btn-primary"
+            >
+                View Details
+            </a>
+        </div>
+    </div>
+</div>
+{% endmacro %}

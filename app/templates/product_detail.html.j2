@@ -1,0 +1,228 @@
+{% extends 'base.html.j2' %}
+
+{% block content %}
+<div class="container mt-5">
+  {# Breadcrumb Navigation #}
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('index') }}">Home</a>
+      </li>
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('category', category_id=product.category_id) }}">
+          {{ product.category }}
+        </a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+    </ol>
+  </nav>
+
+  <div class="row">
+    {# Product Images Section #}
+    <div class="col-md-6">
+      <div class="main-image mb-3">
+        <img id="mainProductImage" 
+             src="{{ url_for('static', filename='images/products/' + product.main_image) }}" 
+             alt="{{ product.name }}" 
+             class="img-fluid rounded shadow">
+      </div>
+      
+      {% if product.images %}
+      <div class="thumbnail-grid">
+        {% for image in product.images %}
+        <img src="{{ url_for('static', filename='images/products/thumbs/' + image) }}" 
+             class="thumbnail img-thumbnail {% if loop.first %}active{% endif %}"
+             data-fullsize="{{ url_for('static', filename='images/products/' + image) }}"
+             alt="Thumbnail {{ loop.index }}">
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    {# Product Info Section #}
+    <div class="col-md-6">
+      <h1 class="product-title mb-3">{{ product.name }}</h1>
+      
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <p class="price h4 text-primary">
+          ${{ "{:,.2f}".format(product.price) }}
+        </p>
+        <span class="badge bg-secondary">{{ product.sku }}</span>
+      </div>
+
+      <div class="product-meta mb-4">
+        <dl class="row">
+          <dt class="col-sm-3">Category</dt>
+          <dd class="col-sm-9">{{ product.category }}</dd>
+          
+          <dt class="col-sm-3">Availability</dt>
+          <dd class="col-sm-9">
+            {% if product.stock > 0 %}
+            <span class="text-success">
+              <i class="fas fa-check-circle"></i> In Stock ({{ product.stock }} available)
+            </span>
+            {% else %}
+            <span class="text-danger">
+              <i class="fas fa-times-circle"></i> Out of Stock
+            </span>
+            {% endif %}
+          </dd>
+          
+          <dt class="col-sm-3">Rating</dt>
+          <dd class="col-sm-9">
+            {{ product.rating|default('4.5') }}/5.0 
+            <small class="text-muted">({{ product.reviews|default('128') }} reviews)</small>
+          </dd>
+        </dl>
+      </div>
+
+      <div class="product-description mb-4">
+        <h3>Description</h3>
+        <div class="description-content">
+          {{ product.description|safe }}
+        </div>
+      </div>
+
+      {% if product.stock > 0 %}
+      <form method="POST" action="{{ url_for('set_cart') }}" class="add-to-cart-form">
+        <input type="hidden" name="product_id" value="{{ product.id }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        
+        <div class="row g-3 align-items-center">
+          <div class="col-auto">
+            <label for="quantity" class="col-form-label">Quantity:</label>
+          </div>
+          <div class="col-auto">
+            <select name="quantity" id="quantity" 
+                    class="form-select" 
+                    style="width: 80px;">
+              {% for qty in range(1, product.stock|min(10) + 1) %}
+              <option value="{{ qty }}">{{ qty }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-auto">
+            <button type="submit" class="btn btn-primary btn-lg">
+              <i class="fas fa-cart-plus"></i> Add to Cart
+            </button>
+          </div>
+        </div>
+      </form>
+      {% else %}
+      <div class="alert alert-warning" role="alert">
+        This product is currently unavailable. Check back later!
+      </div>
+      {% endif %}
+
+      {# Social Sharing #}
+      <div class="mt-4 pt-3 border-top">
+        <small class="text-muted">Share this product:</small>
+        <div class="btn-group" role="group">
+          <button type="button" class="btn btn-outline-secondary">
+            <i class="fab fa-facebook"></i>
+          </button>
+          <button type="button" class="btn btn-outline-secondary">
+            <i class="fab fa-twitter"></i>
+          </button>
+          <button type="button" class="btn btn-outline-secondary">
+            <i class="fab fa-pinterest"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# Reviews Section #}
+  <div class="row mt-5">
+    <div class="col-md-12">
+      <h3 class="mb-4">Customer Reviews</h3>
+
+      {# Review Form #}
+      {% include 'set_productreview.html.j2' %}
+
+      {# Existing Reviews #}
+      {% if product.reviews %}
+        <div class="reviews-list mt-5">
+          {% for review in product.reviews %}
+            <div class="card mb-3 review-card">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <div class="user-info">
+                    <h5 class="card-title mb-0">
+                      <i class="fas fa-user-circle me-2"></i>{{ review.user_name }}
+                    </h5>
+                    <small class="text-muted">
+                      Reviewed on {{ review.created_at.strftime('%B %d, %Y') }}
+                    </small>
+                  </div>
+                  <div class="rating text-warning">
+                    {% for _ in range(review.rating) %}
+                      <i class="fas fa-star"></i>
+                    {% endfor %}
+                    {% for _ in range(5 - review.rating) %}
+                      <i class="far fa-star"></i>
+                    {% endfor %}
+                  </div>
+                </div>
+                <p class="card-text">{{ review.comment }}</p>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="alert alert-info mt-4">
+          <i class="fas fa-info-circle me-2"></i>No reviews yet. Be the first to share your thoughts!
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div> {# Close main container #}
+
+{# Related Products Section #}
+{% if related_products %}
+<section class="related-products mt-5 py-4 bg-light">
+  <div class="container">
+    <h3>Related Products</h3>
+    <div class="row">
+      {% for product in related_products %}
+      <div class="col-md-3 col-sm-6 mb-4">
+        <div class="card h-100">
+          <img src="{{ url_for('static', filename='images/products/' + product.image) }}" 
+               class="card-img-top" 
+               alt="{{ product.name }}">
+          <div class="card-body">
+            <h5 class="card-title">{{ product.name }}</h5>
+            <p class="card-text text-primary">${{ "{:,.2f}".format(product.price) }}</p>
+            <a href="{{ url_for('product_detail', product_id=product.id) }}" 
+               class="btn btn-outline-primary">View Details</a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Thumbnail image switcher
+document.querySelectorAll('.thumbnail').forEach(thumbnail => {
+  thumbnail.addEventListener('click', function() {
+    document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+    this.classList.add('active');
+    document.getElementById('mainProductImage').src = this.dataset.fullsize;
+  });
+});
+
+// Quantity validation
+document.querySelector('#quantity').addEventListener('change', function() {
+  const maxQuantity = {{ product.stock if product.stock < 10 else 10 }};
+  if (this.value > maxQuantity) {
+    this.value = maxQuantity;
+  }
+});
+</script>
+{% endblock %}

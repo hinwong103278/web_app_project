@@ -1,19 +1,63 @@
 {% extends "base.html.j2" %}
 {% import 'bootstrap/wtf.html' as wtf %}
 {% block app_content %}
-<div class="product-filter mb-4">
-    <form class="row g-3">
-        <div class="col-md-3">
-            <input type="text" class="form-control" name="q" placeholder="搜索商品">
-        </div>
-        <div class="col-md-2">
-            <select class="form-select" name="category">
-                <option value="">所有分类</option>
-                {% for cat in categories %}
-                <option value="{{ cat.id }}" {% if cat.id == current_category %}selected{% endif %}>
-                    {{ cat.name }}
-                </option>
-                {% endfor %}
-            </select>
-        </div>
+    <div class="product-filter mb-4">
+        <form class="row g-3">
+            <!-- 分类筛选 -->
+            <div class="col-6 col-md-3">
+                <select class="form-select" name="category">
+                    <option value="">
+                        所有分类
+                    </option>
+                    {% for cat in categories %}
+                        <option value="{{ cat.id }}" {{ 'selected' if cat.id|string == request.args.get('category', '') }}>
+                            {{ cat.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <!-- 价格区间 -->
+            <div class="col-6 col-md-4">
+                <div class="input-group">
+                    <input type="number"
+                           class="form-control"
+                           name="min_price"
+                           placeholder="$最低价"
+                           value="{{ request.args.get('min_price', '') }}">
+                    <span class="input-group-text">-</span>
+                    <input type="number"
+                           class="form-control"
+                           name="max_price"
+                           placeholder="$最高价"
+                           value="{{ request.args.get('max_price', '') }}">
+                </div>
+            </div>
+            <!-- 排序方式 -->
+            <div class="col-6 col-md-3">
+                <select class="form-select" name="sort">
+                    <option value="">
+                        排序方式
+                    </option>
+                    <option value="price_asc" {{ 'selected' if request.args.get('sort') == 'price_asc' }}>
+                        价格从低到高
+                    </option>
+                    <option value="price_desc" {{ 'selected' if request.args.get('sort') == 'price_desc' }}>
+                        价格从高到低
+                    </option>
+                    <option value="sales_desc" {{ 'selected' if request.args.get('sort') == 'sales_desc' }}>
+                        销量最高
+                    </option>
+                    <option value="newest" {{ 'selected' if request.args.get('sort') == 'newest' }}>
+                        最新上架
+                    </option>
+                </select>
+            </div>
+            <!-- 提交按钮 -->
+            <div class="col-6 col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-filter"></i> 筛选
+                </button>
+            </div>
+        </form>
+    </div>
 {% endblock %}

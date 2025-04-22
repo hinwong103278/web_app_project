@@ -811,7 +811,8 @@
         window.addEventListener('resize', handleResponsive);
         handleResponsive();
     </script>
-{% endblock %}{% block payment %}
+{% endblock %}
+{% block payment %}
         {% if current_user.username == "Admin"%}
             <li>
                 <a href="{{ url_for('payment') }}">{{ _('setpayment') }}</a>

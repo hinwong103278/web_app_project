@@ -1,8 +1,36 @@
 {% extends "base.html.j2" %}
 {% import 'bootstrap/wtf.html' as wtf %}
 {% block app_content %}
-    <h1>{{ _('status') }}</h1>
-    <div class="row">
-        <div class="col-md-4">{{ wtf.quick_form(form) }}</div>
+  <h2>Order #{{ order.id }}</h2>
+  <div class="row">
+    <div class="col-md-6">
+      <p><strong>Product:</strong> {{ order.product_name }}</p>
+      <p><strong>Amount:</strong> ${{ "%.2f"|format(order.amount) }}</p>
+      <p><strong>Status:</strong> 
+        <span class="badge bg-{{ 'success' if order.status == OrderStatus.DELIVERED else 'warning' }}">
+          {{ order.status.value }}
+        </span>
+      </p>
+      <p><strong>Created:</strong> {{ moment(order.created_at).format('LLL') }}</p>
+      <p><strong>Last Updated:</strong> {{ moment(order.updated_at).format('LLL') }}</p>
     </div>
+
+    {% if current_user.is_admin %}
+    <div class="col-md-6">
+      <form method="POST">
+        <div class="mb-3">
+          <label class="form-label">Update Status</label>
+          <select name="status" class="form-select">
+            {% for status in OrderStatus %}
+              <option value="{{ status.name }}" {% if status == order.status %}selected{% endif %}>
+                {{ status.value }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Update</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
 {% endblock %}
