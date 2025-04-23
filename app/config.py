@@ -22,7 +22,7 @@ class Config(object):
     # File Uploads (for Product Images, Brand Logos, etc.)
     UPLOAD_FOLDER = os.path.join(basedir, 'app/static/images')
     ALLOWED_IMAGE_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif', 'avif'}
-    MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5MB limit
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB
 
     # Pagination (for Products, Brands, Categories, Orders, etc.)
     PRODUCTS_PER_PAGE = 12

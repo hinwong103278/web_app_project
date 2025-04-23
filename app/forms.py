@@ -2,7 +2,8 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, \
     TextAreaField, IntegerField, SelectField, DecimalField, FileField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, \
-    Length, NumberRange
+    Length, NumberRange, Optional, URL
+from flask_wtf.file import FileField, FileAllowed
 from flask_babel import _, lazy_gettext as _l
 from app.models import User
 
@@ -82,31 +83,38 @@ class UserAddressForm(FlaskForm):
     submit = SubmitField(_l('Submit'))
 
 class ProductForm(FlaskForm):
-    sku = StringField('SKU', validators=[DataRequired()])
-    name = StringField('Product Name', validators=[DataRequired()])
-    description = TextAreaField('Product Description')
-    price = DecimalField('Price', places=2, validators=[DataRequired(), NumberRange(min=0.01)])
-    stock = IntegerField('Stock', validators=[NumberRange(min=0)])
-    category = SelectField('Category', coerce=int)
-    brand = SelectField('Brand', coerce=int)
-    brand_id = IntegerField('Brand ID', validators=[DataRequired()])
-    category_id = IntegerField('Category ID', validators=[DataRequired()])
+    name = StringField('Product Name*', validators=[DataRequired()],render_kw={"placeholder": "Enter product name"})
+    sku = StringField('SKU*', validators=[DataRequired()],render_kw={"placeholder": "Unique product identifier"})
+    description = TextAreaField('Description',render_kw={"rows": 4, "placeholder": "Product details..."})
+    price = DecimalField('Price*', places=2,validators=[DataRequired(), NumberRange(min=0.01)],render_kw={"step": "0.01", "min": "0.01"})
+    stock = IntegerField('Stock*',validators=[DataRequired(), NumberRange(min=0)],render_kw={"min": "0"})
+    category = SelectField('Category*', coerce=int,validators=[DataRequired()],description="Select product category")
+    brand = SelectField('Brand*', coerce=int,validators=[DataRequired()],description="Select product brand")
+    images = FileField('Product Images (max 5)',validators=[DataRequired(),FileAllowed(['jpg', 'jpeg', 'png', 'avif'], 'Images only!')],render_kw={'multiple': True,'accept': 'image/*','data-max-files': 5})
     is_featured = BooleanField('Featured Product')
-    is_active = BooleanField('Active Status', default=True)
-    images = FileField('Product Images (Multiple)', render_kw={'multiple': True})
-    submit = SubmitField('Add to Cart')
+    is_active = BooleanField('Active Product', default=True)
+    submit = SubmitField('Save Product')
 
 class CategoryForm(FlaskForm):
+    # Required fields
     name = StringField(_l('Category Name'), validators=[DataRequired()])
-    image = StringField(_l('Category Image URL'), validators=[DataRequired()])
-    count = IntegerField(_l('Product Count'), validators=[DataRequired()])
-    filter = SelectField(_l('Filter by Category'), choices=[], validators=[DataRequired()])
-    submit = SubmitField(_l('Add to Category'))
+    image = StringField(_l('Category Image URL'), validators=[DataRequired(), URL(message=_l('Invalid URL format.'))])
+    # Parent category dropdown (populated dynamically)
+    parent_category = SelectField(_l('Parent Category'), choices=[], coerce=int,  # Ensure integer values
+        validators=[DataRequired()])
+    # Optional: Retain "count" only if manual entry is required
+    count = IntegerField(_l('Product Count'), validators=[NumberRange(min=0, message=_l('Product count cannot be negative.'))])
+    submit = SubmitField(_l('Add Category'))
 
 class BrandForm(FlaskForm):
-    name = StringField(_l('Brand Name'), validators=[DataRequired()])
-    logo = StringField(_l('Brand Logo URL'), validators=[DataRequired()])
-    submit = SubmitField(_l('View Brand'))
+    name = StringField(_l('Brand Name'),validators=[DataRequired(),
+            Length(max=100, message=_l('Brand name must be under 100 characters'))],
+            render_kw={"placeholder": _l("Enter brand name")})
+    logo = StringField(_l('Brand Logo URL'),
+        validators=[DataRequired(),URL(message=_l('Invalid URL format')),
+            Length(max=200, message=_l('URL must be under 200 characters'))],
+    render_kw={"placeholder": _l("https://example.com/logo.png"),"pattern": "https?://.+"})
+    submit = SubmitField(_l('Create Brand'),render_kw={"class": "btn btn-primary"})
 
 class ProductReviewForm(FlaskForm):
     text = TextAreaField(_l('Write your review'), validators=[DataRequired(), Length(max=500)])
@@ -117,12 +125,11 @@ class OrderDetailsForm(FlaskForm):
     id = StringField(_l('Order ID'), validators=[DataRequired()])
     customer_name = StringField(_l('Customer Name'), validators=[DataRequired()])
     address = TextAreaField(_l('Shipping Address'), validators=[DataRequired()])
-    submit = SubmitField(_l('Confirm Order'))
     
 class OrderStatusForm(FlaskForm):
     id = StringField(_l('Order ID'), validators=[DataRequired()])
     status = SelectField(_l('Status'), choices=[('Pending', 'Pending'), ('Shipped', 'Shipped'), ('Delivered', 'Delivered')], validators=[DataRequired()])
-    submit = SubmitField(_l('Update Status'))
+    
 
 class CartForm(FlaskForm):
     user_id = IntegerField(_l('User ID'), validators=[DataRequired()])

@@ -1,7 +1,12 @@
+import os
+import uuid
 from datetime import datetime
 from flask import render_template, flash, redirect, url_for, request, g
 from flask_login import login_user, logout_user, current_user, login_required
+from flask import Blueprint, request
+from werkzeug.utils import secure_filename
 from werkzeug.urls import url_parse
+from sqlalchemy.exc import IntegrityError
 from flask_babel import _, get_locale
 from app import app, db
 from app.forms import LoginForm, RegistrationForm, EditProfileForm, PostForm, \
@@ -10,6 +15,12 @@ from app.forms import LoginForm, RegistrationForm, EditProfileForm, PostForm, \
     OrderDetailsForm, OrderStatusForm, CartForm, CouponForm, CustomerOrderForm
 from app.models import User, Post, Payment, ShippingAddresses, Product, Brand, Category, ProductReview, OrderDetails, OrderStatus, CustomerOrder, Coupon, Cart
 from app.email import send_password_reset_email
+
+sku = f"PROD-{datetime.now().strftime('%Y%m%d')}-{uuid.uuid4().hex[:4].upper()}"
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'avif'}
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 @app.before_request
@@ -233,56 +244,103 @@ def userAddress():
                            form=form, user=user)
 
 @app.route('/set_product', methods=['GET', 'POST'])
-@login_required
 def set_product():
     form = ProductForm()
+    # 動態載入品牌和分類
+    form.brand.choices = [(b.id, b.name) for b in Brand.query.order_by(Brand.name).all()]
+    form.category.choices = [(c.id, c.name) for c in Category.query.order_by(Category.name).all()]
     if form.validate_on_submit():
-        product = Product(name=form.name.data)
+        # 生成唯一 SKU
+        sku = f"PROD-{uuid.uuid4().hex[:6].upper()}"
+        # 處理圖片上傳
+        image_files = request.files.getlist('images')
+        saved_images = []
+        upload_folder = app.config['UPLOAD_FOLDER']
+        os.makedirs(upload_folder, exist_ok=True)
+        for img in image_files:
+            if img.filename == '':
+                continue
+            ext = img.filename.rsplit('.', 1)[1].lower()
+            filename = f"{uuid.uuid4().hex}.{ext}"
+            secure_name = secure_filename(filename)
+            img.save(os.path.join(upload_folder, secure_name))
+            saved_images.append(secure_name)
+        # 創建產品對象
+        product = Product(
+            sku=sku,
+            name=form.name.data,
+            description=form.description.data,
+            price=form.price.data,
+            stock=form.stock.data,
+            brand_id=form.brand.data,
+            category_id=form.category.data,
+            images=saved_images,
+            is_featured=form.is_featured.data,
+            is_active=form.is_active.data
+        )
         db.session.add(product)
         db.session.commit()
-        flash(_('Your changes have been saved.'))
-        return redirect(url_for('index'))
-    return render_template('set_product.html.j2', title=_('product'),
-                           form=form, user=user)
+        flash('Product created successfully!', 'success')
+        return redirect(url_for('set_product'))  # 使用正確的端點名稱
+    return render_template('set_product.html.j2', form=form)
 
-@app.route('/set_brand', methods=['GET', 'POST'])
-@login_required
-def set_brand():
+@app.route('/set_brand', methods=['GET', 'POST'])  # 修正路由
+def create():
     form = BrandForm()
     if form.validate_on_submit():
-        brand = Brand(name=form.name.data)
-        db.session.add(brand)
-        db.session.commit()
-        flash(_('Your changes have been saved.'))
-        return redirect(url_for('index'))
-    return render_template('set_brand.html.j2', title=_('brand'),
-                           form=form, user=user)
+        brand = Brand(name=form.name.data.strip(), logo_url=form.logo.data.strip())
+        try:
+            db.session.add(brand)
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            flash(_('Brand name already exists!'), 'error')
+    return render_template('set_brand.html.j2', form=form)
+
+@app.route('/brands')
+def list_brands():
+    brands = Brand.query.options(db.joinedload(Brand.products)).order_by(Brand.name.asc()).all()
+    return render_template('brands/list.html', brands=brands)
+
+@app.route('/brand/<int:brand_id>')
+def brand_details(brand_id):
+    brand = Brand.query.get_or_404(brand_id)
+    products = brand.products  # 確保這裡的關聯屬性已正確定義
+    return render_template('brand_details.html.j2', brand=brand, products=products)
 
 @app.route('/set_category', methods=['GET', 'POST'])
-@login_required
-def set_category():
+def create_category():
     form = CategoryForm()
+    # Dynamically populate parent category choices from the database
+    form.parent_category.choices = [(category.id, category.name) for category in Category.query.all()]
     if form.validate_on_submit():
-        category = Category(name=form.name.data)
-        db.session.add(category)
+        # Create new category
+        new_category = Category(
+            name=form.name.data,
+            image=form.image.data,
+            parent_category_id=form.parent_category.data,
+        )
+        db.session.add(new_category)
         db.session.commit()
-        flash(_('Your changes have been saved.'))
-        return redirect(url_for('index'))
-    return render_template('set_category.html.j2', title=_('category'),
-                           form=form, user=user)
+        return redirect(url_for('categories'))
+    return render_template('category.html.j2', form=form)
 
-@app.route('/set_productReview', methods=['GET', 'POST'])
+@app.route('/product/<int:product_id>/review', methods=['POST'])
 @login_required
-def set_productReview():
+def add_review(product_id):
     form = ProductReviewForm()
     if form.validate_on_submit():
-        productReview = ProductReview(name=form.name.data)
-        db.session.add(productReview)
+        review = ProductReview(
+            text=form.text.data,
+            rating=form.rating.data,
+            user_id=current_user.id,
+            product_id=product_id
+        )
+        db.session.add(review)
         db.session.commit()
-        flash(_('Your changes have been saved.'))
-        return redirect(url_for('index'))
-    return render_template('set_producteview.html.j2', title=_('productReview'),
-                           form=form, user=user)
+        flash('Your review has been submitted!')
+        return redirect(url_for('product.details', product_id=product_id))
+    return render_template('set_productreview.html.j2', form=form)
 
 @app.route('/set_orderdetails', methods=['GET', 'POST'])
 @login_required

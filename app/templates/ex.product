@@ -1,0 +1,109 @@
+{% extends 'admin/layout.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Create New Product</h2>
+    <hr>
+    
+    <form method="POST" enctype="multipart/form-data" novalidate>
+        {{ form.hidden_tag() }}
+        
+        <div class="row">
+            <!-- Left Column -->
+            <div class="col-md-8">
+                <div class="form-group">
+                    {{ form.name.label }}
+                    {{ form.name(class="form-control" + (' is-invalid' if form.name.errors else '')) }}
+                    {% for error in form.name.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.description.label }}
+                    {{ form.description(class="form-control", rows=4) }}
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-md-4">
+                <div class="form-group">
+                    {{ form.price.label }}
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">$</span>
+                        </div>
+                        {{ form.price(class="form-control" + (' is-invalid' if form.price.errors else '')) }}
+                    </div>
+                    {% for error in form.price.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.stock.label }}
+                    {{ form.stock(class="form-control" + (' is-invalid' if form.stock.errors else '')) }}
+                    {% for error in form.stock.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.brand.label }}
+                    {{ form.brand(class="custom-select" + (' is-invalid' if form.brand.errors else '')) }}
+                    {% for error in form.brand.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.category.label }}
+                    {{ form.category(class="custom-select" + (' is-invalid' if form.category.errors else '')) }}
+                    {% for error in form.category.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.images.label }}
+                    <div class="custom-file">
+                        {{ form.images(class="custom-file-input") }}
+                        <label class="custom-file-label" for="images">Choose files...</label>
+                    </div>
+                    <small class="form-text text-muted">
+                        Max 5 images (JPEG, PNG, WEBP)
+                    </small>
+                </div>
+
+                <div class="form-group form-check">
+                    {{ form.is_featured(class="form-check-input") }}
+                    {{ form.is_featured.label(class="form-check-label") }}
+                </div>
+
+                <div class="form-group form-check">
+                    {{ form.is_active(class="form-check-input") }}
+                    {{ form.is_active.label(class="form-check-label") }}
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> {{ form.submit.label }}
+        </button>
+    </form>
+</div>
+
+<!-- 文件上传预览脚本 -->
+<script>
+document.querySelector('.custom-file-input').addEventListener('change', function(e) {
+    const files = e.target.files;
+    const label = this.nextElementSibling;
+    
+    if (files.length > 0) {
+        label.textContent = files.length + ' files selected';
+    } else {
+        label.textContent = 'Choose files...';
+    }
+});
+</script>
+{% endblock %}

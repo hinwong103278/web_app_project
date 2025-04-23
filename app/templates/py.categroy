@@ -1,0 +1,21 @@
+# 创建顶级分类
+top_category = Category(name="电子产品", image="https://example.com/electronics.jpg")
+db.session.add(top_category)
+db.session.commit()
+
+# 创建子分类
+sub_category = Category(
+    name="智能手机",
+    image="https://example.com/phones.jpg",
+    parent_category_id=top_category.id
+)
+db.session.add(sub_category)
+db.session.commit()
+
+# 添加商品到子分类
+iphone = Product(name="iPhone 15", category_id=sub_category.id)
+db.session.add(iphone)
+db.session.commit()
+
+# 查询分类的商品数量（自动化统计版）
+print(sub_category.count)  # 输出：1

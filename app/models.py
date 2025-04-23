@@ -5,8 +5,10 @@ from app import app, db, login
 import jwt
 
 from flask_login import UserMixin
+from sqlalchemy.orm import relationship, validates
 
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import cached_property
 
 
 followers = db.Table(
@@ -32,6 +34,7 @@ class User(UserMixin, db.Model):
     payments = db.relationship('Payment', backref='author', lazy='dynamic')
     useraddress = db.relationship('ShippingAddresses', backref='author', lazy='dynamic')
     wishitems = db.relationship('Wishlist', backref='author', lazy='dynamic')
+    reviews = db.relationship('ProductReview', backref='author', lazy='dynamic', cascade='all, delete-orphan')
 
     def __repr__(self) -> str:
         return f'<User {self.username}>'
@@ -144,56 +147,99 @@ class Wishlist(db.Model):
 
 class Product(db.Model):    
     id = db.Column(db.Integer, primary_key=True)
+    sku = db.Column(db.String(50), unique=True, nullable=False)
     name = db.Column(db.String(200), nullable=False)            # 商品名称
     description = db.Column(db.Text)                             # 详细描述
     price = db.Column(db.Numeric(10,2), nullable=False)          # 价格
-    stock = db.Column(db.Integer, default=0)                     # 库存
+    stock = db.Column(db.Integer, default=0)                    # 库存
+    images = db.Column(db.JSON)
     main_image = db.Column(db.String(500))                      # 主图URL
     is_featured = db.Column(db.Boolean, default=False)          # 是否推荐
     is_active = db.Column(db.Boolean, default=True)             # 是否上架
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
-    images = db.relationship('ProductImage', backref='product', cascade='all, delete-orphan')
-    category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
-    category = db.relationship('Category', back_populates='products')
-    brand_id = db.Column(db.Integer, db.ForeignKey('brand.id'))
-    brand = db.relationship('Brand', back_populates='products')
-    customerorder_id = db.Column(db.Integer, db.ForeignKey('customer_order.id'))
-    image = db.Column(db.String(200))
-    reviews = db.relationship('ProductReview', backref='product', lazy='dynamic')
-    order_id = db.Column(db.Integer, db.ForeignKey('customer_order.id'))
+    category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
+    brand_id = db.Column(db.Integer, db.ForeignKey('brand.id'), nullable=False)
+    customerorder_id = db.Column(db.Integer, db.ForeignKey('customer_order.id'), nullable=False)
+    brand = relationship('Brand', back_populates='products')
+    reviews = db.relationship('ProductReview', backref='product', lazy='dynamic', cascade='all, delete-orphan')
     Cart_items = db.relationship('Cart', backref='author', lazy='dynamic')
 
     def __repr__(self) -> str:
         return f'<Product {self.name}>'
+
+    @property
+    def average_rating(self):
+        return db.session.query(
+            db.func.avg(ProductReview.rating)
+        ).filter_by(product_id=self.id).scalar()
+
+    @property
+    def review_count(self):
+        return db.session.query(
+            db.func.count(ProductReview.id)
+        ).filter_by(product_id=self.id).scalar()
     
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
-    slug = db.Column(db.String(100), unique=True)
-    products = db.relationship('Product', back_populates='category')
+    parent_category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
+    products = db.relationship('Product', backref='category', lazy='dynamic')  # 保留這個定義
+    parent_category = db.relationship('Category', remote_side=[id], backref=db.backref('product', lazy='dynamic'))
 
-    def __repr__(self) -> str:
-        return f'<Category {self.name}>'
+    @property
+    def count(self):
+        return self.products.count() 
+    
+    @cached_property
+    def count(self):
+        return self.products.count()
     
 class Brand(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), unique=True, nullable=False)
-    logo = db.Column(db.String(500))
+    name = db.Column(db.String(100), nullable=False, unique=True, index=True)
+    logo_url = db.Column(db.String(200), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     products = db.relationship('Product', back_populates='brand')
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return f'<Brand {self.name}>'
+
+    def to_dict(self):
+        return {'id': self.id,'name': self.name,'logo_url': self.logo_url,
+            'created_at': self.created_at.isoformat(),'updated_at': self.updated_at.isoformat()}
 
 class ProductReview(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    rating = db.Column(db.Integer)
+    text = db.Column(db.Text, nullable=False)
+    rating = db.Column(db.Integer, nullable=False)  
     comment = db.Column(db.String(500))
-    product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
-    def __repr__(self) -> str:
-        return f'<ProductReview {self.comment}>'
+    __table_args__ = (
+        db.Index('ix_product_reviews_product_id', 'product_id'),
+        db.Index('ix_product_reviews_user_id', 'user_id'),
+    )
+
+    @validates('rating')
+    def validate_rating(self, kclearey, rating):
+        if not (1 <= rating <= 5):
+            raise ValueError('Rating must be between 1 and 5')
+        return rating
+
+    @validates('text')
+    def validate_text(self, key, text):
+        max_length = 500
+        if len(text) > max_length:
+            raise ValueError(f'Review text cannot exceed {max_length} characters')
+        return text
+    
+    def __repr__(self):
+        return f'<ProductReview {self.id} - Product {self.product_id} - User {self.user_id}>'
     
 class OrderDetails(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -230,11 +276,3 @@ class Coupon(db.Model):
     def __repr__(self) -> str:
         return f'<Coupon {self.code}>'
     
-class ProductImage(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    url = db.Column(db.String(500), nullable=False)
-    is_main = db.Column(db.Boolean, default=False)  
-    product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
-
-    def __repr__(self) -> str:
-        return f'<ProductImage {self.url}>'

@@ -1,0 +1,52 @@
+{% extends "base.html.j2" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{# 定義產品卡片宏 #}
+{% macro product_card(product) %}
+<div class="col">
+    <div class="card h-100">
+        <img src="{{ product.main_image or url_for('static', filename='images/placeholder.png') }}" 
+             class="card-img-top" 
+             alt="{{ product.name }}"
+             style="height: 200px; object-fit: contain;">
+        <div class="card-body">
+            <h5 class="card-title">{{ product.name }}</h5>
+            <p class="card-text text-muted">{{ product.description|truncate(100) }}</p>
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="h4 text-danger">${{ "%.2f"|format(product.price) }}</span>
+                <span class="badge bg-{{ 'success' if product.stock > 10 else 'warning' if product.stock > 0 else 'danger' }}">
+                    {{ product.stock }}库存
+                </span>
+            </div>
+        </div>
+        <div class="card-footer bg-transparent">
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="{{ url_for('product_detail', id=product.id) }}" class="btn btn-primary me-md-2">
+                    <i class="fas fa-info-circle"></i> 详情
+                </a>
+                <button class="btn btn-success" onclick="addToCart({{ product.id }})">
+                    <i class="fas fa-cart-plus"></i> 購物車
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{% block app_content %}
+
+    {# 產品列表 #}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
+        {% for product in products %}
+            {{ product_card(product) }}
+        {% else %}
+        <div class="col-12">
+            <div class="alert alert-warning text-center">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                沒有找到商品
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+{% endblock %}

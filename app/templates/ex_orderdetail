@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ _('Order Details') }}</title>
+</head>
+<body>
+    <h1>{{ _('Order Details') }}</h1>
+    <p><strong>{{ _('Order ID') }}:</strong> {{ order_id }}</p>
+    <p><strong>{{ _('Customer Name') }}:</strong> {{ order.customer_name }}</p>
+    <p><strong>{{ _('Shipping Address') }}:</strong><br>{{ order.address }}</p>
+    <a href="{{ url_for('create_order') }}">{{ _('Create New Order') }}</a>
+</body>
+</html>
