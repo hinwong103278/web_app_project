@@ -23,7 +23,7 @@
             </li>
         </ul>
     </nav>
-    <div style="background-color: black; color: white; width: 100%; text-align: center; position: fixed; left: 0; bottom: 0;">
+    <div style="background-color: rgb(32, 55, 129); width: 100%; text-align: center; position: fixed; left: 0; bottom: 0;">
     {% block setting %}
         {% if current_user.username == "Admin"%}
             <li>
@@ -44,14 +44,19 @@
         {% else %}
             {% if payment %}
              <ul>
-            {% for p in payment %}
-                <li>
-                <img src="{{ p.logo }}" alt="Payment Image" width="150">
-                </li>
-            {% endfor %}
+                {% for p in payment %}
+                    <img src="{{ p.logo }}" alt="Payment Image" width="150">
+                {% endfor %}
+            </ul>
+            {% if address %}
+                <ul>
+                    {% for s in address %}
+                        <span style="color: white;">our shippingAddress: {{ s.address }}</span>
+                    {% endfor %}
+                </ul>
+            {% endif %}
             </ul>
             {% endif %}
-
         {% endif %}
     {% endblock %}
     </div>

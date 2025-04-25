@@ -29,7 +29,6 @@ class User(UserMixin, db.Model):
         primaryjoin=(followers.c.follower_id == id),
         secondaryjoin=(followers.c.followed_id == id),
         backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
-    payments = db.relationship('Payment', backref='author', lazy='dynamic')
     useraddress = db.Column(db.String(140))
     wishitems = db.relationship('Wishlist', backref='author', lazy='dynamic')
 
@@ -97,8 +96,6 @@ class Payment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     payment = db.Column(db.String(140))
     logo = db.Column(db.String(200))
-    cardnumber = db.Column(db.String(200))
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     def __repr__(self) -> str:
         return f'<Payment {self.payment}>'
@@ -113,11 +110,10 @@ class CustomerOrder(db.Model):
 
 class ShippingAddresses(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    shippingddress = db.Column(db.String(140))
-
+    address = db.Column(db.String(140))
 
     def __repr__(self) -> str:
-        return f'<shippingAddresses {self.UAddress}>'
+        return f'<shippingAddresses {self.address}>'
 
 class Wishlist(db.Model):
     id = db.Column(db.Integer, primary_key=True)

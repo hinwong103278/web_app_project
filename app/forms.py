@@ -77,7 +77,7 @@ class PaymentForm(FlaskForm):
     submit = SubmitField(_l('Submit'))
 
 class ShippingAddressesForm(FlaskForm):
-    SAddress = StringField(_l('enter the address in here'), validators=[DataRequired()])
+    address = StringField(_l('enter the address in here'), validators=[DataRequired()])
     submit = SubmitField(_l('Submit'))
 
 class UserAddressForm(FlaskForm):

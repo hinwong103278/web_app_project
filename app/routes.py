@@ -39,9 +39,10 @@ def index():
     prev_url = url_for(
         'index', page=posts.prev_num) if posts.prev_num else None
     payment = Payment.query.all()
+    address = ShippingAddresses.query.all()
     return render_template('index.html.j2', title=_('Home'), form=form,
                            posts=posts.items, next_url=next_url,
-                           prev_url=prev_url, payment=payment)
+                           prev_url=prev_url, payment=payment, address=address)
 
 
 @app.route('/explore')
@@ -134,7 +135,7 @@ def reset_password(token):
 @login_required
 def user(username):
     user = User.query.filter_by(username=username).first_or_404()
-    payment = Payment.query.all()  
+    payment = Payment.query.all()
     page = request.args.get('page', 1, type=int)
     posts = user.followed_posts().paginate(
         page=page, per_page=app.config["POSTS_PER_PAGE"], error_out=False)
@@ -201,6 +202,7 @@ def unfollow(username):
 @login_required
 def set_payment():
     form = PaymentForm()
+    payment = Payment.query.all()
     if form.validate_on_submit():
         payments = Payment(payment=form.payment.data, logo=form.logo.data)
         db.session.add(payments)
@@ -208,20 +210,21 @@ def set_payment():
         flash(_('Your changes have been saved.'))
         return redirect(url_for('index'))
     return render_template('setpayment.html.j2', title=_('set_payment'),
-                           form=form, user=user)
+                           form=form, user=user, payment=payment)
 
-@app.route('/set shippingAddress', methods=['GET', 'POST'])
+@app.route('/set_shipping_Address', methods=['GET', 'POST'])
 @login_required
 def shippingAddress():
     form = ShippingAddressesForm()
+    address = ShippingAddresses.query.all()
     if form.validate_on_submit():
-        SAddress = ShippingAddresses(SAddress=form.SAddress.data)
-        db.session.add(SAddress)
+        address = ShippingAddresses(address=form.address.data)
+        db.session.add(address)
         db.session.commit()
         flash(_('Your changes have been saved.'))
         return redirect(url_for('index'))
     return render_template('setshippingAddress.html.j2', title=_('shippingAddress'),
-                           form=form)
+                           form=form, address=address)
 
 
 @app.route('/set_product', methods=['GET', 'POST'])
@@ -301,3 +304,21 @@ def set_orderstatus():
         return redirect(url_for('index'))
     return render_template('set_orderstatus.html.j2', title=_('orderstatus'),
                            form=form, user=user)
+
+@app.route('/remove_payment/<int:payment_id>', methods=['GET','POST'])
+@login_required
+def remove_payment(payment_id):
+    payment = Payment.query.filter_by(id=payment_id).first_or_404()
+    db.session.delete(payment)
+    db.session.commit()
+    flash('Payment has been removed.')
+    return redirect(('index'))
+
+@app.route('/remove_address/<int:address_id>',methods=['GET',"POST"])
+@login_required
+def remove_address(address_id):
+    address = ShippingAddresses.query.filter_by(id=address_id).first_or_404()
+    db.session.delete(address)
+    db.session.commit()
+    flash('address has been removed.')
+    return redirect(('index')) 
