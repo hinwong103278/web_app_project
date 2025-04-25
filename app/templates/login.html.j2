@@ -1,16 +1,45 @@
 {% extends "base.html.j2" %}
 {% import 'bootstrap/wtf.html' as wtf %}
+{% block head %}
+    {{ super() }}
+    <style>
+        /* 登錄頁面樣式 */
+        h1 {
+            font-size: 2.5rem;
+            color: #343a40;
+        }
+
+        .login-container {
+            max-width: 400px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .login-container a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .login-container a:hover {
+            text-decoration: underline;
+        }
+    </style>
+{% endblock %}
+
 {% block app_content %}
     <h1>{{ _('Sign In') }}</h1>
-    <div class="row">
-        <div class="col-md-4">{{ wtf.quick_form(form) }}</div>
+    <div class="login-container">
+        {{ wtf.quick_form(form) }}
+        <br/>
+        <p>
+            {{ _('New User?') }} <a href="{{ url_for('register') }}">{{ _('Click to Register!') }}</a>
+        </p>
+        <p>
+            {{ _('Forgot Your Password?') }}
+            <a href="{{ url_for('reset_password_request') }}">{{ _('Click to Reset It') }}</a>
+        </p>
     </div>
-    <br/>
-    <p>
-        {{ _('New User?') }} <a href="{{ url_for('register') }}">{{ _('Click to Register!') }}</a>
-    </p>
-    <p>
-        {{ _('Forgot Your Password?') }}
-        <a href="{{ url_for('reset_password_request') }}">{{ _('Click to Reset It') }}</a>
-    </p>
 {% endblock %}

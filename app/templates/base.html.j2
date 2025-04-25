@@ -1,4 +1,66 @@
 {% extends 'bootstrap/base.html' %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% block head %}
+    {{ super() }}
+    <style>
+        /* 全局樣式 */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f8f9fa;
+            color: #3f78b1;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        h1, h2, h3 {
+            color: #90b8dd;
+        }
+
+        /* 導航欄樣式 */
+        .navbar {
+            background-color: #12467a;
+            padding: 10px 15px;
+            border-radius: 5px;
+            box-shadow: 0px 4px 8px rgba(255, 255, 255, 0.1);
+        }
+
+        .navbar .navbar-brand {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .navbar .navbar-brand:hover {
+            color: #007bff;
+        }
+
+        .navbar-nav > li > a {
+            color: white;
+            margin-right: 15px;
+            text-decoration: none;
+        }
+
+        .navbar-nav > li > a:hover {
+            color: #007bff;
+        }
+
+        /* 彈性容器 */
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        .alert {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+{% endblock %}
+
 {% block title %}
     {% if title %}
         {{ title }} - Microblog
@@ -6,6 +68,7 @@
         {{ _('Welcome to Microblog') }}
     {% endif %}
 {% endblock %}
+
 {% block navbar %}
     <nav class="navbar navbar-default">
         <div class="container">
@@ -20,7 +83,9 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="{{ url_for('index') }}">Microblog</a>
+                <a class="navbar-brand" href="{{ url_for('index') }}">
+    <img src="{{ url_for('static', filename='css/logo.png') }}" alt="pns.hk" style="height: 50px; width: auto;">
+</a>
             </div>
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <ul class="nav navbar-nav">
@@ -49,17 +114,20 @@
         </div>
     </nav>
 {% endblock %}
+
 {% block content %}
     <div class="container">
         {% with messages = get_flashed_messages() %}
             {% if messages %}
-                {% for message in messages %}<div class="alert alert-info" role="alert">{{ message }}</div>{% endfor %}
+                {% for message in messages %}
+                    <div class="alert alert-info" role="alert">{{ message }}</div>
+                {% endfor %}
             {% endif %}
         {% endwith %}
-        {# application content needs to be provided in the app_content block #}
         {% block app_content %}{% endblock %}
     </div>
 {% endblock %}
+
 {% block scripts %}
     {{ super() }}
     {{ moment.include_moment() }}

@@ -1,5 +1,5 @@
 from app import db, app
-from app.models import User, Post
+from app.models import User, Post, Product
 
 
 app_context = app.app_context()
@@ -23,5 +23,6 @@ p1 = Post(body='my first post!', author=u1)
 p2 = Post(body='my first post!', author=u2)
 db.session.add(p1)
 db.session.add(p2)
+
 
 db.session.commit()

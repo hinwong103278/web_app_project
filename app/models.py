@@ -107,6 +107,7 @@ class CustomerOrder(db.Model):
     Details = db.relationship('OrderDetails', backref='author', lazy='dynamic')
     status = db.relationship('OrderStatus', backref='author', lazy='dynamic')
     cost = db.Column(db.Float(9))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
 class ShippingAddresses(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -134,6 +135,7 @@ class Product(db.Model):
     brand_id = db.Column(db.Integer, db.ForeignKey('brand.id'))
     reviews = db.relationship('ProductReview', backref='product', lazy='dynamic')
     order_id = db.Column(db.Integer, db.ForeignKey('customer_order.id'))
+    Cart_items = db.relationship('Cart', backref='author', lazy='dynamic')
 
     def __repr__(self) -> str:
         return f'<Product {self.name}>'
@@ -182,3 +184,21 @@ class OrderStatus(db.Model):
 
     def __repr__(self) -> str:
         return f'<OrderStatus {self.status}>'
+    
+class Cart(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
+    quantity = db.Column(db.Integer, default=1)
+
+    def __repr__(self) -> str:
+        return f'<Cart {self.id}>'
+    
+class Coupon(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(50), unique=True, nullable=False)
+    discount_percentage = db.Column(db.Float, nullable=False)
+    expiration_date = db.Column(db.DateTime, nullable=False)
+
+    def __repr__(self) -> str:
+        return f'<Coupon {self.code}>'

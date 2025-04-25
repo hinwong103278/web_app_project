@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import render_template, flash, redirect, url_for, request, g
+from flask import render_template, flash, redirect, url_for, request, g, session, make_response
 from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.urls import url_parse
 from flask_babel import _, get_locale
@@ -7,8 +7,8 @@ from app import app, db
 from app.forms import LoginForm, RegistrationForm, EditProfileForm, PostForm, \
     ResetPasswordRequestForm, ResetPasswordForm, PaymentForm, ShippingAddressesForm, \
     UserAddressForm, ProductForm, BrandForm, CategoryForm, ProductReviewForm, \
-    OrderDetailsForm, OrderStatusForm
-from app.models import User, Post, Payment, ShippingAddresses, Product, Brand, Category, ProductReview, OrderDetails, OrderStatus
+    OrderDetailsForm, OrderStatusForm, CartForm, CouponForm, CustomerOrderForm
+from app.models import User, Post, Payment, ShippingAddresses, Product, Brand, Category, ProductReview, OrderDetails, OrderStatus, CustomerOrder, Coupon, Cart
 from app.email import send_password_reset_email
 
 
@@ -71,6 +71,8 @@ def login():
             flash(_('Invalid username or password'))
             return redirect(url_for('login'))
         login_user(user, remember=form.remember_me.data)
+        # 保存用戶信息到Session
+        session['username'] = user.username
         next_page = request.args.get('next')
         if not next_page or url_parse(next_page).netloc != '':
             next_page = url_for('index')
@@ -80,7 +82,9 @@ def login():
 
 @app.route('/logout')
 def logout():
-    logout_user()
+    session.pop('username', None)  # 清除Session中的用戶數據
+    logout_user() # 清除Flask-Login的用戶認證
+    flash(_('You have been logged out.'))  # 顯示登出提示消息
     return redirect(url_for('index'))
 
 
@@ -305,6 +309,62 @@ def set_orderstatus():
     return render_template('set_orderstatus.html.j2', title=_('orderstatus'),
                            form=form, user=user)
 
+@app.route('/set_cart', methods=['GET', 'POST'])
+@login_required
+def set_cart():
+    form = CartForm()
+    if form.validate_on_submit():
+        cart_item = Cart(user_id=form.user_id.data, product_id=form.product_id.data, quantity=form.quantity.data)
+        db.session.add(cart_item)
+        db.session.commit()
+        flash(_('Your changes have been saved.'))
+        return redirect(url_for('index'))
+    return render_template('set_cart.html.j2', title=_('Set Cart'), form=form)
+
+@app.route('/set_coupon', methods=['GET', 'POST'])
+@login_required
+def set_coupon():
+    form = CouponForm()
+    if form.validate_on_submit():
+        coupon = Coupon(code=form.code.data, discount_percentage=form.discount_percentage.data, expiration_date=form.expiration_date.data)
+        db.session.add(coupon)
+        db.session.commit()
+        flash(_('Your coupon has been created.'))
+        return redirect(url_for('index'))
+    return render_template('set_coupon.html.j2', title=_('Set Coupon'), form=form)
+
+@app.route('/set_customer_order', methods=['GET', 'POST'])
+@login_required
+def set_customer_order():
+    form = CustomerOrderForm()
+    if form.validate_on_submit():
+        order = CustomerOrder(date=form.date.data, user_id=form.user_id.data, cost=form.cost.data)
+        db.session.add(order)
+        db.session.commit()
+        flash(_('Your order has been created.'))
+        return redirect(url_for('index'))
+    return render_template('set_customer_order.html.j2', title=_('Set Customer Order'), form=form)
+
+@app.route('/set_cookie')
+def set_cookie():
+    resp = make_response("Cookie is set!")
+    resp.set_cookie('username', 'example_user', max_age=60*60*24, secure=True)  # 保存一天
+    return resp
+
+@app.route('/get_cookie')
+def get_cookie():
+    username = request.cookies.get('username')  # 獲取名為 'username' 的Cookie
+    if username:
+        return f'Hello, {username}!'
+    return 'No cookie found!'
+
+@app.route('/delete_cookie')
+def delete_cookie():
+    resp = make_response("Cookie has been deleted!")
+    resp.set_cookie('username', '', max_age=0)  # 刪除Cookie
+    return resp
+
+
 @app.route('/remove_payment/<int:payment_id>', methods=['GET','POST'])
 @login_required
 def remove_payment(payment_id):
@@ -322,3 +382,4 @@ def remove_address(address_id):
     db.session.commit()
     flash('address has been removed.')
     return redirect(('index')) 
+

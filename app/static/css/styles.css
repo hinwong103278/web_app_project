@@ -1,0 +1,116 @@
+/* 文件名: styles.css */
+
+/* 全局設計 */
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f8f9fa; /* 微妙的背景灰色 */
+    color: #212529;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+
+
+/* 頂部導航樣式 */
+.pager {
+    display: flex;
+    justify-content: space-between;
+    list-style: none;
+    padding: 15px;
+    background-color: #343a40;
+    color: #fff;
+    margin: 0;
+}
+
+.pager a {
+    text-decoration: none;
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.pager a:hover {
+    background-color: #495057; /* 較亮的深灰色 */
+}
+
+/* 標題樣式 */
+h1 {
+    font-size: 2.5rem;
+    color: #495057;
+    text-align: center;
+    margin: 20px 0;
+}
+
+/* 表單樣式 */
+form {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+form input, form select, form textarea, form button {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+form button {
+    background-color: #007bff; /* 主藍色 */
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+form button:hover {
+    background-color: #0056b3; /* 深藍 */
+}
+
+/* 帖子樣式 */
+.post {
+    margin: 20px auto;
+    padding: 15px;
+    background: #fff;
+    border-left: 5px solid #007bff; /* 左邊藍色條標記 */
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.post h2 {
+    font-size: 1.5rem;
+    color: #343a40;
+    margin-bottom: 10px;
+}
+
+.post p {
+    font-size: 1rem;
+    color: #6c757d;
+}
+
+/* 管理菜單樣式 */
+.admin-menu li {
+    list-style: none;
+    margin-bottom: 15px;
+}
+
+.admin-menu a {
+    display: inline-block;
+    text-decoration: none;
+    color: #fff;
+    background-color: #dc3545; /* 紅色 */
+    padding: 10px 15px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.admin-menu a:hover {
+    background-color: #b21f32; /* 深紅色 */
+}
