@@ -94,8 +94,8 @@ class Post(db.Model):
 
 class Payment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    payment = db.Column(db.String(140))
-    logo = db.Column(db.String(200))
+    payment = db.Column(db.String(500))
+    logo = db.Column(db.String(500))
 
     def __repr__(self) -> str:
         return f'<Payment {self.payment}>'
@@ -129,8 +129,8 @@ class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(140))
     description = db.Column(db.String(140))
-    price = db.Column(db.Float)
-    image = db.Column(db.String(200))
+    price = db.Column(db.Float(9))
+    image = db.Column(db.String(500))
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
     brand_id = db.Column(db.Integer, db.ForeignKey('brand.id'))
     reviews = db.relationship('ProductReview', backref='product', lazy='dynamic')
@@ -139,6 +139,7 @@ class Product(db.Model):
 
     def __repr__(self) -> str:
         return f'<Product {self.name}>'
+    
     
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -160,13 +161,13 @@ class Brand(db.Model):
 
 class ProductReview(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    rating = db.Column(db.Integer)
-    comment = db.Column(db.String(500))
-    product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    content = db.Column(db.Text, nullable=False)  
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
-    def __repr__(self) -> str:
-        return f'<ProductReview {self.comment}>'
+    def __repr__(self):
+        return f'<ProductReview {self.content}>'
     
 class OrderDetails(db.Model):
     id = db.Column(db.Integer, primary_key=True)

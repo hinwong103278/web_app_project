@@ -1,8 +1,38 @@
 {% extends "base.html.j2" %}
 {% import 'bootstrap/wtf.html' as wtf %}
 {% block app_content %}
-    <h1>{{ _('Product') }}</h1>
-    <div class="row">
-        <div class="col-md-4">{{ wtf.quick_form(form) }}</div>
-    </div>
+    {% if show_controls %}
+        <h1>{{ _('Product') }}</h1>
+        <div class="row">
+            <div class="col-md-4">{{ wtf.quick_form(form) }}</div>
+        </div>
+    {% endif %}
+    {% if product %}
+        <div class="row">
+            {% for p in product %}
+                <!-- 產品資訊區塊 -->
+                <div class="col-md-6">
+                    <h1>{{ p.name }}</h1>
+                    <p>{{ p.description }}</p>
+                    <h4>價格：{{ p.price }} 元</h4>
+                    <div class="d-flex gap-2">
+                        <form method="POST" action="{{ url_for('set_cart', product_id=p.id) }}" style="display: inline;">
+                            <button type="submit" class="btn btn-primary">加入購物車</button>
+                        </form>
+                        {% if show_controls %}
+                        <form method="POST" action="{{ url_for('remove_product', product_id=p.id) }}" style="display: inline;">
+                            <button type="submit" class="btn btn-danger">移除</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+                <!-- 圖片區塊 -->
+                <div class="col-md-6 text-end">
+                    <img src="{{ p.image }}" alt="{{ p.name }}" class="img-fluid" style="width: 100px;" />
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>{{ _('No products available.') }}</p>
+    {% endif %}
 {% endblock %}

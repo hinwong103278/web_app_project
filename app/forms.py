@@ -84,28 +84,27 @@ class UserAddressForm(FlaskForm):
     UAddress = StringField(_l('enter the address in here'), validators=[DataRequired()])
     submit = SubmitField(_l('Submit'))
 
-class ProductForm(FlaskForm): 
+class ProductForm(FlaskForm):
     name = StringField(_l('Product Name'), validators=[DataRequired()])
-    description = TextAreaField(_l('Description'))
-    price = IntegerField(_l('Price'), validators=[DataRequired()])
-    quantity = IntegerField(_l('Quantity'), validators=[DataRequired()], default=1)
-    submit = SubmitField(_l('Add to Cart'))
+    description = TextAreaField(_l('Product Description'), validators=[DataRequired(), Length(max=500)])
+    price = IntegerField(_l('Product Price'), validators=[DataRequired()])
+    image = StringField(_l('Product Image'), validators=[DataRequired()])
+    submit = SubmitField(_l('Add Product'))
 
 class CategoryForm(FlaskForm):
     name = StringField(_l('Category Name'), validators=[DataRequired()])
-    image = StringField(_l('Category Image URL'), validators=[DataRequired()])
-    count = IntegerField(_l('Product Count'), validators=[DataRequired()])
-    filter = SelectField(_l('Filter by Category'), choices=[], validators=[DataRequired()])
-    submit = SubmitField(_l('Add to Category'))
+    description = TextAreaField(_l('Category Description'), validators=[Length(max=500)])
+    submit = SubmitField(_l('Add Category'))
 
 class BrandForm(FlaskForm):
     name = StringField(_l('Brand Name'), validators=[DataRequired()])
-    logo = StringField(_l('Brand Logo URL'), validators=[DataRequired()])
-    submit = SubmitField(_l('View Brand'))
+    logo = StringField(_l('Brand Logo'), validators=[DataRequired()])
+    description = TextAreaField(_l('Brand Description'), validators=[Length(max=500)])
+    submit = SubmitField(_l('Add Brand'))
 
 class ProductReviewForm(FlaskForm):
-    text = TextAreaField(_l('Write your review'), validators=[DataRequired(), Length(max=500)])
     Rating = SelectField(_l('Rating'), choices=[(5, '5'), (4, '4'), (3, '3'), (2, '2'), (1, '1')], coerce=int, validators=[DataRequired()])
+    content = TextAreaField('Review Content', validators=[DataRequired()])
     submit = SubmitField(_l('Submit Review'))
 
 class OrderDetailsForm(FlaskForm):

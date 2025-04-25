@@ -20,29 +20,24 @@ def before_request():
     g.locale = str(get_locale())
 
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/')
 @app.route('/index', methods=['GET', 'POST'])
 @login_required
 def index():
     form = PostForm()
-    if form.validate_on_submit():
-        post = Post(body=form.post.data, author=current_user)
-        db.session.add(post)
-        db.session.commit()
-        flash(_('Your post is now live!'))
-        return redirect(url_for('index'))
-    page = request.args.get('page', 1, type=int)
+    products = Product.query.all()  # 查詢所有產品
     posts = current_user.followed_posts().paginate(
-        page=page, per_page=app.config["POSTS_PER_PAGE"], error_out=False)
-    next_url = url_for(
-        'index', page=posts.next_num) if posts.next_num else None
-    prev_url = url_for(
-        'index', page=posts.prev_num) if posts.prev_num else None
+        page=request.args.get('page', 1, type=int),
+        per_page=app.config['POSTS_PER_PAGE'],
+        error_out=False
+    )
+    next_url = url_for('index', page=posts.next_num) if posts.has_next else None
+    prev_url = url_for('index', page=posts.prev_num) if posts.has_prev else None
     payment = Payment.query.all()
     address = ShippingAddresses.query.all()
-    return render_template('index.html.j2', title=_('Home'), form=form,
-                           posts=posts.items, next_url=next_url,
-                           prev_url=prev_url, payment=payment, address=address)
+    return render_template('index.html.j2',title=_('Home'),form=form,posts=posts.items,
+                            next_url=next_url,prev_url=prev_url,payment=payment,
+                            address=address,products=products)
 
 
 @app.route('/explore')
@@ -235,14 +230,20 @@ def shippingAddress():
 @login_required
 def set_product():
     form = ProductForm()
+    products = Product.query.all()
     if form.validate_on_submit():
-        product = Product(name=form.name.data)
+        product = Product(
+            name=form.name.data,
+            description=form.description.data,
+            price=form.price.data,
+            image=form.image.data,
+        )
         db.session.add(product)
         db.session.commit()
         flash(_('Your changes have been saved.'))
-        return redirect(url_for('index'))
-    return render_template('set_product.html.j2', title=_('product'),
-                           form=form, user=user)
+        return redirect(url_for('set_product'))
+    return render_template('set_product.html.j2', title=_('Product'), 
+                           form=form, product=products)
 
 @app.route('/set_brand', methods=['GET', 'POST'])
 @login_required
@@ -282,6 +283,37 @@ def set_productReview():
         return redirect(url_for('index'))
     return render_template('set_producteview.html.j2', title=_('productReview'),
                            form=form, user=user)
+
+@app.route('/set_cart/<int:product_id>', methods=['POST'])
+@login_required
+def set_cart(product_id):
+    product = Product.query.get_or_404(product_id)
+    cart_item = Cart.query.filter_by(user_id=current_user.id, product_id=product.id).first()
+    if cart_item:
+        cart_item.quantity += 1  
+    else:
+        cart_item = Cart(user_id=current_user.id, product_id=product.id, quantity=1)
+        db.session.add(cart_item)
+    db.session.commit()
+    flash(_('Product added to cart!'))
+    return redirect(url_for('set_product'))
+
+@app.route('/set_productReview/<int:product_id>', methods=['GET', 'POST'])
+@login_required
+def set_productReview(product_id):
+    product = Product.query.get_or_404(product_id)
+    form = ProductReviewForm()
+    if form.validate_on_submit():
+        review = ProductReview(
+            content=form.content.data,  
+            product_id=product.id,
+            user_id=current_user.id
+        )
+        db.session.add(review)
+        db.session.commit()
+        flash(_('Your review has been submitted.'))
+        return redirect(url_for('index'))
+    return render_template('set_productreview.html.j2', title=_('Review Product'), form=form, product=product)
 
 @app.route('/set_orderdetails', methods=['GET', 'POST'])
 @login_required
