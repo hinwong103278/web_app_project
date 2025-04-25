@@ -64,4 +64,58 @@
             <p>Posted by {{ post.author.username }}</p>
         </div>
     {% endfor %}
+
 {% endblock %}
+    <nav aria-label="...">
+        <ul class="pager">
+            <li class="previous{% if not prev_url %} disabled{% endif %}">
+                <a href="{{ prev_url or '#' }}">
+                    <span aria-hidden="true">&larr;</span> {{ _('Newer posts') }}
+                </a>
+            </li>
+            <li class="next{% if not next_url %} disabled{% endif %}">
+                <a href="{{ next_url or '#' }}">
+                    {{ _('Older posts') }} <span aria-hidden="true">&rarr;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <div style="background-color: rgb(32, 55, 129); width: 100%; text-align: center; position: fixed; left: 0; bottom: 0;">
+    {% block setting %}
+        {% if current_user.username == "Admin"%}
+            <li>
+                <a href="{{ url_for('set_payment') }}">{{ _('setpayment') }}</a>
+            </li>
+            <li>
+                <a href="{{ url_for('shippingAddress') }}">{{ _('setshippingAddress') }}</a>
+            </li>
+            <li>
+                <a href="{{ url_for('set_product') }}">{{ _('Product') }}</a>
+            </li>
+            <li>
+                <a href="{{ url_for('set_category') }}">{{ _('Category') }}</a>
+            </li>
+            <li>
+                <a href="{{ url_for('set_brand') }}">{{ _('Brand') }}</a>
+            </li>
+        {% else %}
+            {% if payment %}
+             <ul>
+                {% for p in payment %}
+                    <img src="{{ p.logo }}" alt="Payment Image" width="150">
+                {% endfor %}
+            </ul>
+            {% if address %}
+                <ul>
+                    {% for s in address %}
+                        <span style="color: white;">our shippingAddress: {{ s.address }}</span>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            </ul>
+            {% endif %}
+        {% endif %}
+    {% endblock %}
+    </div>
+{% endblock %}
+
