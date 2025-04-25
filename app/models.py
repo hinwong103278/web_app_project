@@ -120,7 +120,7 @@ class ShippingAddresses(db.Model):
 
 
     def __repr__(self) -> str:
-        return f'<shippingAddresses {self.Address}>'
+        return f'<shippingAddresses {self.UAddress}>'
 
 class Wishlist(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -88,7 +88,7 @@ def register():
         return redirect(url_for('index'))
     form = RegistrationForm()
     if form.validate_on_submit():
-        user = User(username=form.username.data, email=form.email.data)
+        user = User(username=form.username.data, email=form.email.data, useraddress=form.UAddress.data)
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
@@ -133,6 +133,7 @@ def reset_password(token):
 @login_required
 def user(username):
     user = User.query.filter_by(username=username).first_or_404()
+    UserAddress = ShippingAddresses.query.filter_by(user_id=user.id).all()
     page = request.args.get('page', 1, type=int)
     posts = user.followed_posts().paginate(
         page=page, per_page=app.config["POSTS_PER_PAGE"], error_out=False)
@@ -141,7 +142,7 @@ def user(username):
     prev_url = url_for(
         'index', page=posts.prev_num) if posts.prev_num else None
     return render_template('user.html.j2', user=user, posts=posts.items,
-                           next_url=next_url, prev_url=prev_url)
+                           next_url=next_url, prev_url=prev_url, UserAddress=UserAddress)
 
 
 @app.route('/edit_profile', methods=['GET', 'POST'])
@@ -221,16 +222,21 @@ def shippingAddress():
 
 @app.route('/set userAddress', methods=['GET', 'POST'])
 @login_required
-def userAddress():
+def set_userAddress():
     form = UserAddressForm()
+    UAddress = ShippingAddresses(UAddress=form.UAddress.data, author=current_user)
     if form.validate_on_submit():
-        UAddress = ShippingAddresses(UAddress=form.UAddress.data, author=current_user)
-        db.session.add(UAddress)
+        if UAddress:
+            UAddress.UAddress = form.UAddress.data
+        else:
+            UAddress = ShippingAddresses(UAddress=form.UAddress.data, user_id=current_user.id)
+            db.session.add(UAddress)
         db.session.commit()
         flash(_('Your changes have been saved.'))
         return redirect(url_for('index'))
-    return render_template('setuserAddress.html.j2', title=_('userAddress'),
+    return render_template('setuserAddress.html.j2', title=_('set_userAddress'),
                            form=form, user=user)
+
 
 @app.route('/set_product', methods=['GET', 'POST'])
 @login_required
