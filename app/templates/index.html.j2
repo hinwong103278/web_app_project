@@ -1,45 +1,67 @@
 {% extends "base.html.j2" %}
 {% import 'bootstrap/wtf.html' as wtf %}
+{% block head %}
+    {{ super() }}
+    <style>
+        /* 表單樣式 */
+        form {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0px 4px 8px rgba(255, 255, 255, 0.1);
+        }
+
+        form input, form textarea, form select, form button {
+            width: 100%;
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #104274;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        form button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        form button:hover {
+            background-color: #0056b3;
+        }
+
+        /* 帖子樣式 */
+        .post {
+            margin: 20px auto;
+            padding: 15px;
+            background: white;
+            border-left: 5px solid #007bff;
+            border-radius: 5px;
+            box-shadow: 0px 4px 8px rgba(255, 255, 255, 0.1);
+        }
+    </style>
+{% endblock %}
+
 {% block app_content %}
-    <h1>{{ _('Hi, %(username)s!', username=current_user.username) }}</h1>
+    <h1>Hi, {{ current_user.username }}!</h1>
+
     {% if form %}
-        {{ wtf.quick_form(form) }}
-        <br/>
+        <form method="post">
+            {{ form.hidden_tag() }}
+            {{ form.post.label }}<br>
+            {{ form.post(size=30) }}
+            <button type="submit">{{ _('Submit') }}</button>
+        </form>
     {% endif %}
+
     {% for post in posts %}
-        {% include "_post.html.j2" %}
+        <div class="post">
+            <h2>{{ post.body }}</h2>
+            <p>Posted by {{ post.author.username }}</p>
+        </div>
     {% endfor %}
-    <nav aria-label="...">
-        <ul class="pager">
-            <li class="previous{% if not prev_url %} disabled{% endif %}">
-                <a href="{{ prev_url or '#' }}">
-                    <span aria-hidden="true">&larr;</span> {{ _('Newer posts') }}
-                </a>
-            </li>
-            <li class="next{% if not next_url %} disabled{% endif %}">
-                <a href="{{ next_url or '#' }}">
-                    {{ _('Older posts') }} <span aria-hidden="true">&rarr;</span>
-                </a>
-            </li>
-        </ul>
-    </nav>
-    {% block payment %}
-        {% if current_user.username == "Admin"%}
-            <li>
-                <a href="{{ url_for('payment') }}">{{ _('setpayment') }}</a>
-            </li>
-            <li>
-                <a href="{{ url_for('shippingAddress') }}">{{ _('setshippingAddress') }}</a>
-            </li>
-            <li>
-                <a href="{{ url_for('product') }}">{{ _('Product') }}</a>
-            </li>
-            <li>
-                <a href="{{ url_for('category') }}">{{ _('Category') }}</a>
-            </li>
-            <li>
-                <a href="{{ url_for('brand') }}">{{ _('Brand') }}</a>
-            </li>
-        {% endif %}
-    {% endblock %}
 {% endblock %}

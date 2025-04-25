@@ -345,3 +345,4 @@ def set_customer_order():
         flash(_('Your order has been created.'))
         return redirect(url_for('index'))
     return render_template('set_customer_order.html.j2', title=_('Set Customer Order'), form=form)
+
