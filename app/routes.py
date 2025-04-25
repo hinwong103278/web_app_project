@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import render_template, flash, redirect, url_for, request, g
+from flask import render_template, flash, redirect, url_for, request, g, session, make_response
 from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.urls import url_parse
 from flask_babel import _, get_locale
@@ -69,6 +69,8 @@ def login():
             flash(_('Invalid username or password'))
             return redirect(url_for('login'))
         login_user(user, remember=form.remember_me.data)
+        # 保存用戶信息到Session
+        session['username'] = user.username
         next_page = request.args.get('next')
         if not next_page or url_parse(next_page).netloc != '':
             next_page = url_for('index')
@@ -78,7 +80,9 @@ def login():
 
 @app.route('/logout')
 def logout():
-    logout_user()
+    session.pop('username', None)  # 清除Session中的用戶數據
+    logout_user() # 清除Flask-Login的用戶認證
+    flash(_('You have been logged out.'))  # 顯示登出提示消息
     return redirect(url_for('index'))
 
 
@@ -345,4 +349,24 @@ def set_customer_order():
         flash(_('Your order has been created.'))
         return redirect(url_for('index'))
     return render_template('set_customer_order.html.j2', title=_('Set Customer Order'), form=form)
+
+@app.route('/set_cookie')
+def set_cookie():
+    resp = make_response("Cookie is set!")
+    resp.set_cookie('username', 'example_user', max_age=60*60*24, secure=True)  # 保存一天
+    return resp
+
+@app.route('/get_cookie')
+def get_cookie():
+    username = request.cookies.get('username')  # 獲取名為 'username' 的Cookie
+    if username:
+        return f'Hello, {username}!'
+    return 'No cookie found!'
+
+@app.route('/delete_cookie')
+def delete_cookie():
+    resp = make_response("Cookie has been deleted!")
+    resp.set_cookie('username', '', max_age=0)  # 刪除Cookie
+    return resp
+
 

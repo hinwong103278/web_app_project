@@ -1,7 +1,7 @@
 import logging
 from logging.handlers import RotatingFileHandler, SMTPHandler
 import os
-from flask import Flask, request
+from flask import Flask, request, session
 from app.config import Config  
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -13,6 +13,7 @@ from flask_babel import Babel
 
 app = Flask(__name__)
 app.config.from_object(Config)
+app.secret_key = os.urandom(24)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 login = LoginManager()
