@@ -38,9 +38,10 @@ def index():
         'index', page=posts.next_num) if posts.next_num else None
     prev_url = url_for(
         'index', page=posts.prev_num) if posts.prev_num else None
+    payment = Payment.query.all()
     return render_template('index.html.j2', title=_('Home'), form=form,
                            posts=posts.items, next_url=next_url,
-                           prev_url=prev_url)
+                           prev_url=prev_url, payment=payment)
 
 
 @app.route('/explore')
@@ -133,7 +134,7 @@ def reset_password(token):
 @login_required
 def user(username):
     user = User.query.filter_by(username=username).first_or_404()
-    UserAddress = ShippingAddresses.query.filter_by(user_id=user.id).all()
+    payment = Payment.query.all()  
     page = request.args.get('page', 1, type=int)
     posts = user.followed_posts().paginate(
         page=page, per_page=app.config["POSTS_PER_PAGE"], error_out=False)
@@ -142,7 +143,7 @@ def user(username):
     prev_url = url_for(
         'index', page=posts.prev_num) if posts.prev_num else None
     return render_template('user.html.j2', user=user, posts=posts.items,
-                           next_url=next_url, prev_url=prev_url, UserAddress=UserAddress)
+                           next_url=next_url, prev_url=prev_url, payment=payment)
 
 
 @app.route('/edit_profile', methods=['GET', 'POST'])
@@ -152,12 +153,14 @@ def edit_profile():
     if form.validate_on_submit():
         current_user.username = form.username.data
         current_user.about_me = form.about_me.data
+        current_user.useraddress = form.useraddress.data 
         db.session.commit()
         flash(_('Your changes have been saved.'))
         return redirect(url_for('edit_profile'))
     elif request.method == 'GET':
         form.username.data = current_user.username
         form.about_me.data = current_user.about_me
+        form.useraddress.data = current_user.useraddress
     return render_template('edit_profile.html.j2', title=_('Edit Profile'),
                            form=form)
 
@@ -196,7 +199,7 @@ def unfollow(username):
 
 @app.route('/set Payment', methods=['GET', 'POST'])
 @login_required
-def payment():
+def set_payment():
     form = PaymentForm()
     if form.validate_on_submit():
         payments = Payment(payment=form.payment.data, logo=form.logo.data)
@@ -204,7 +207,7 @@ def payment():
         db.session.commit()
         flash(_('Your changes have been saved.'))
         return redirect(url_for('index'))
-    return render_template('setpayment.html.j2', title=_('payment'),
+    return render_template('setpayment.html.j2', title=_('set_payment'),
                            form=form, user=user)
 
 @app.route('/set shippingAddress', methods=['GET', 'POST'])
@@ -219,23 +222,6 @@ def shippingAddress():
         return redirect(url_for('index'))
     return render_template('setshippingAddress.html.j2', title=_('shippingAddress'),
                            form=form)
-
-@app.route('/set userAddress', methods=['GET', 'POST'])
-@login_required
-def set_userAddress():
-    form = UserAddressForm()
-    UAddress = ShippingAddresses(UAddress=form.UAddress.data, author=current_user)
-    if form.validate_on_submit():
-        if UAddress:
-            UAddress.UAddress = form.UAddress.data
-        else:
-            UAddress = ShippingAddresses(UAddress=form.UAddress.data, user_id=current_user.id)
-            db.session.add(UAddress)
-        db.session.commit()
-        flash(_('Your changes have been saved.'))
-        return redirect(url_for('index'))
-    return render_template('setuserAddress.html.j2', title=_('set_userAddress'),
-                           form=form, user=user)
 
 
 @app.route('/set_product', methods=['GET', 'POST'])
