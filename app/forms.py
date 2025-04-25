@@ -21,6 +21,7 @@ class RegistrationForm(FlaskForm):
     password2 = PasswordField(
         _l('Repeat Password'), validators=[DataRequired(),
                                            EqualTo('password')])
+    UAddress = StringField(_l('Address'), validators=[DataRequired()])
     submit = SubmitField(_l('Register'))
 
     def validate_username(self, username):
@@ -51,6 +52,8 @@ class EditProfileForm(FlaskForm):
     username = StringField(_l('Username'), validators=[DataRequired()])
     about_me = TextAreaField(_l('About me'),
                              validators=[Length(min=0, max=140)])
+    useraddress = StringField(_l('Useraddress'), validators=[DataRequired()])
+    cardnumber = StringField(_l('Cardnumber'), validators=[DataRequired()])
     submit = SubmitField(_l('Submit'))
 
     def __init__(self, original_username, *args, **kwargs):
@@ -74,7 +77,7 @@ class PaymentForm(FlaskForm):
     submit = SubmitField(_l('Submit'))
 
 class ShippingAddressesForm(FlaskForm):
-    SAddress = StringField(_l('enter the address in here'), validators=[DataRequired()])
+    address = StringField(_l('enter the address in here'), validators=[DataRequired()])
     submit = SubmitField(_l('Submit'))
 
 class UserAddressForm(FlaskForm):
