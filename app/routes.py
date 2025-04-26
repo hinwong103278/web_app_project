@@ -35,9 +35,12 @@ def index():
     prev_url = url_for('index', page=posts.prev_num) if posts.has_prev else None
     payment = Payment.query.all()
     address = ShippingAddresses.query.all()
+    brands = Brand.query.all()
+    categories = Category.query.all()
     return render_template('index.html.j2',title=_('Home'),form=form,posts=posts.items,
                             next_url=next_url,prev_url=prev_url,payment=payment,
-                            address=address,products=products)
+                            address=address,products=products,brands=brands,
+                            categories=categories )
 
 
 @app.route('/explore')
@@ -271,9 +274,9 @@ def set_category():
     return render_template('set_category.html.j2', title=_('category'),
                            form=form, user=user)
 
-@app.route('/set_productReview', methods=['GET', 'POST'])
+@app.route('/set_productReview', methods=['GET', 'POST'], endpoint='set_productReview_general')
 @login_required
-def set_productReview():
+def set_productReview_general():
     form = ProductReviewForm()
     if form.validate_on_submit():
         productReview = ProductReview(name=form.name.data)
@@ -281,12 +284,12 @@ def set_productReview():
         db.session.commit()
         flash(_('Your changes have been saved.'))
         return redirect(url_for('index'))
-    return render_template('set_producteview.html.j2', title=_('productReview'),
-                           form=form, user=user)
+    return render_template('set_productreview.html.j2', title=_('Product Review'),
+                           form=form, user=current_user)
 
-@app.route('/set_cart/<int:product_id>', methods=['POST'])
+@app.route('/set_cart/<int:product_id>', methods=['POST'], endpoint='set_cart_add')
 @login_required
-def set_cart(product_id):
+def set_cart_add(product_id):
     product = Product.query.get_or_404(product_id)
     cart_item = Cart.query.filter_by(user_id=current_user.id, product_id=product.id).first()
     if cart_item:
@@ -298,14 +301,14 @@ def set_cart(product_id):
     flash(_('Product added to cart!'))
     return redirect(url_for('set_product'))
 
-@app.route('/set_productReview/<int:product_id>', methods=['GET', 'POST'])
+@app.route('/set_productReview/<int:product_id>', methods=['GET', 'POST'], endpoint='set_productReview_specific')
 @login_required
-def set_productReview(product_id):
+def set_productReview_specific(product_id):
     product = Product.query.get_or_404(product_id)
     form = ProductReviewForm()
     if form.validate_on_submit():
         review = ProductReview(
-            content=form.content.data,  
+            content=form.content.data,
             product_id=product.id,
             user_id=current_user.id
         )
@@ -313,7 +316,8 @@ def set_productReview(product_id):
         db.session.commit()
         flash(_('Your review has been submitted.'))
         return redirect(url_for('index'))
-    return render_template('set_productreview.html.j2', title=_('Review Product'), form=form, product=product)
+    return render_template('set_productreview.html.j2', title=_('Review Product'),
+                           form=form, product=product)
 
 @app.route('/set_orderdetails', methods=['GET', 'POST'])
 @login_required
@@ -341,9 +345,9 @@ def set_orderstatus():
     return render_template('set_orderstatus.html.j2', title=_('orderstatus'),
                            form=form, user=user)
 
-@app.route('/set_cart', methods=['GET', 'POST'])
+@app.route('/set_cart', methods=['GET', 'POST'], endpoint='set_cart_manage')
 @login_required
-def set_cart():
+def set_cart_manage():
     form = CartForm()
     if form.validate_on_submit():
         cart_item = Cart(user_id=form.user_id.data, product_id=form.product_id.data, quantity=form.quantity.data)
@@ -414,4 +418,3 @@ def remove_address(address_id):
     db.session.commit()
     flash('address has been removed.')
     return redirect(('index')) 
-
