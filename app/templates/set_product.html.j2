@@ -1,8 +1,96 @@
 {% extends "base.html.j2" %}
-{% import 'bootstrap/wtf.html' as wtf %}
+
 {% block app_content %}
-    <h1>{{ _('Product') }}</h1>
-    <div class="row">
-        <div class="col-md-4">{{ wtf.quick_form(form) }}</div>
+<div class="container my-5">
+    <h1 class="mb-4 text-primary">{{ _('Add or Manage Products') }}</h1>
+    
+    <!-- 添加產品的表單 -->
+    <div class="card shadow-sm mb-5">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">{{ _('Add New Product') }}</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('set_product') }}">
+                {{ form.hidden_tag() }}
+                <div class="form-group">
+                    <label for="name">{{ form.name.label }}</label>
+                    {{ form.name(class="form-control", id="name", placeholder=_('Enter product name')) }}
+                </div>
+                <div class="form-group">
+                    <label for="description">{{ form.description.label }}</label>
+                    {{ form.description(class="form-control", id="description", placeholder=_('Enter product description')) }}
+                </div>
+                <div class="form-group">
+                    <label for="price">{{ form.price.label }}</label>
+                    {{ form.price(class="form-control", id="price", placeholder=_('Enter product price')) }}
+                </div>
+                <div class="form-group">
+                    <label for="image">{{ form.image.label }}</label>
+                    {{ form.image(class="form-control", id="image", placeholder=_('Enter product image URL')) }}
+                </div>
+                <div class="form-group">
+                    <label for="category">{{ form.category.label }}</label>
+                    {{ form.category(class="form-control", id="category") }}
+                    <small class="form-text text-muted">{{ _('Select an existing category or leave empty to create a new one.') }}</small>
+                </div>
+                <div class="form-group">
+                    <label for="new_category">{{ form.new_category.label }}</label>
+                    {{ form.new_category(class="form-control", id="new_category", placeholder=_('Enter new category name')) }}
+                </div>
+                <div class="form-group">
+                    <label for="brand">{{ form.brand.label }}</label>
+                    {{ form.brand(class="form-control", id="brand") }}
+                    <small class="form-text text-muted">{{ _('Select an existing brand or leave empty to create a new one.') }}</small>
+                </div>
+                <div class="form-group">
+                    <label for="new_brand">{{ form.new_brand.label }}</label>
+                    {{ form.new_brand(class="form-control", id="new_brand", placeholder=_('Enter new brand name')) }}
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">{{ _('Save Product') }}</button>
+            </form>
+        </div>
     </div>
+
+    <!-- 現有產品列表 -->
+    <h2 class="mb-4 text-primary">{{ _('Existing Products') }}</h2>
+    {% if products %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="thead-light">
+                    <tr>
+                        <th>{{ _('Product Name') }}</th>
+                        <th>{{ _('Category') }}</th>
+                        <th>{{ _('Brand') }}</th>
+                        <th>{{ _('Price') }}</th>
+                        <th>{{ _('Actions') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                        <tr>
+                            <td>{{ product.name }}</td>
+                            <td>{{ product.category.name if product.category else _('No Category') }}</td>
+                            <td>{{ product.brand.name if product.brand else _('No Brand') }}</td>
+                            <td>${{ product.price }}</td>
+                            <td>
+                                <!-- 編輯按鈕 -->
+                                <a href="{{ url_for('edit_product', product_id=product.id) }}" class="btn btn-warning btn-sm">
+                                    {{ _('Edit') }}
+                                </a>
+                                <!-- 刪除按鈕 -->
+                                <form method="POST" action="{{ url_for('delete_product', product_id=product.id) }}" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('{{ _('Are you sure you want to delete this product?') }}')">
+                                        {{ _('Delete') }}
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-muted">{{ _('No products available. Start by adding new products above.') }}</p>
+    {% endif %}
+</div>
 {% endblock %}

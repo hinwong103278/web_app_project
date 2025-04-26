@@ -1,0 +1,47 @@
+{% extends "base.html.j2" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% block app_content %}
+    <h1>{{ _('Your Shopping Cart') }}</h1>
+    {% if cart_items %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>{{ _('Product') }}</th>
+                    <th>{{ _('Quantity') }}</th>
+                    <th>{{ _('Price') }}</th>
+                    <th>{{ _('Actions') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in cart_items %}
+                    <tr>
+                        <td>{{ item.product.name }}</td>
+                        <td>
+                            <form method="post" action="{{ url_for('update_cart', item_id=item.id) }}">
+                                <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="form-control">
+                                <button type="submit" class="btn btn-primary mt-2">{{ _('Update') }}</button>
+                            </form>
+                        </td>
+                        <td>${{ item.total_price() }}</td>
+                        <td>
+                            <a href="{{ url_for('remove_cart_item', item_id=item.id) }}" class="btn btn-danger">
+                                {{ _('Remove') }}
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <h3>{{ _('Total Price') }}: ${{ total_price }}</h3>
+
+        <!-- 新增付款按鈕 -->
+        <form method="POST" action="{{ url_for('checkout') }}">
+            <button type="submit" class="btn btn-success" style="width: 100%; font-size: 18px; padding: 10px;">
+                {{ _('Proceed to Payment') }}
+            </button>
+        </form>
+
+    {% else %}
+        <p>{{ _('Your cart is empty.') }}</p>
+    {% endif %}
+{% endblock %}

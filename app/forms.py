@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, \
-    TextAreaField, IntegerField, SelectField
+    TextAreaField, IntegerField, SelectField, DecimalField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, \
     Length
 from flask_babel import _, lazy_gettext as _l
@@ -84,23 +84,25 @@ class UserAddressForm(FlaskForm):
     UAddress = StringField(_l('enter the address in here'), validators=[DataRequired()])
     submit = SubmitField(_l('Submit'))
 
-class ProductForm(FlaskForm): 
-    name = StringField(_l('Product Name'), validators=[DataRequired()])
-    description = TextAreaField(_l('Description'))
-    price = IntegerField(_l('Price'), validators=[DataRequired()])
-    quantity = IntegerField(_l('Quantity'), validators=[DataRequired()], default=1)
-    submit = SubmitField(_l('Add to Cart'))
+class ProductForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired()])
+    description = StringField('Description')
+    price = DecimalField('Price')
+    image = StringField('Image URL')
+    category = SelectField('Category', coerce=int)  # 類別下拉框
+    new_category = StringField('New Category')  # 新類別輸入框
+    brand = SelectField('Brand', coerce=int)  # 現有品牌選擇
+    new_brand = StringField('New Brand')  # 新品牌
+    submit = SubmitField('Submit')
 
 class CategoryForm(FlaskForm):
-    name = StringField(_l('Category Name'), validators=[DataRequired()])
-    image = StringField(_l('Category Image URL'), validators=[DataRequired()])
-    count = IntegerField(_l('Product Count'), validators=[DataRequired()])
-    filter = SelectField(_l('Filter by Category'), choices=[], validators=[DataRequired()])
-    submit = SubmitField(_l('Add to Category'))
+    name = StringField('Name', validators=[DataRequired()])
+    description = StringField('Description')  # 類別描述
+    submit = SubmitField('Submit')
 
 class BrandForm(FlaskForm):
     name = StringField(_l('Brand Name'), validators=[DataRequired()])
-    logo = StringField(_l('Brand Logo URL'), validators=[DataRequired()])
+    description = StringField('Description')
     submit = SubmitField(_l('View Brand'))
 
 class ProductReviewForm(FlaskForm):

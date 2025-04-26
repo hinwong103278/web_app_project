@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import render_template, flash, redirect, url_for, request, g, session, make_response
+from flask import render_template, flash, redirect, url_for, request, g, session, make_response, abort
 from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.urls import url_parse
 from flask_babel import _, get_locale
@@ -31,6 +31,7 @@ def index():
         db.session.commit()
         flash(_('Your post is now live!'))
         return redirect(url_for('index'))
+    products = Product.query.all()  # 查詢所有產品
     page = request.args.get('page', 1, type=int)
     posts = current_user.followed_posts().paginate(
         page=page, per_page=app.config["POSTS_PER_PAGE"], error_out=False)
@@ -42,7 +43,7 @@ def index():
     address = ShippingAddresses.query.all()
     return render_template('index.html.j2', title=_('Home'), form=form,
                            posts=posts.items, next_url=next_url,
-                           prev_url=prev_url, payment=payment, address=address)
+                           prev_url=prev_url, payment=payment, address=address, products=products)
 
 
 @app.route('/explore')
@@ -235,14 +236,49 @@ def shippingAddress():
 @login_required
 def set_product():
     form = ProductForm()
+    form.category.choices = [(c.id, c.name) for c in Category.query.all()]
+    form.brand.choices = [(b.id, b.name) for b in Brand.query.all()]  # 填充品牌選項
+
+    products = Product.query.all()
     if form.validate_on_submit():
-        product = Product(name=form.name.data)
+        # 處理類別
+        category_id = None
+        if form.new_category.data:
+            new_category = Category(name=form.new_category.data)
+            db.session.add(new_category)
+            db.session.commit()
+            category_id = new_category.id
+        elif form.category.data:
+            category_id = form.category.data
+
+        # 處理品牌
+        brand_id = None
+        if form.new_brand.data:
+            new_brand = Brand(name=form.new_brand.data, description=None)
+            db.session.add(new_brand)
+            db.session.commit()
+            brand_id = new_brand.id
+        elif form.brand.data:
+            brand_id = form.brand.data
+
+        # 創建產品
+        product = Product(
+            name=form.name.data,
+            description=form.description.data,
+            price=form.price.data,
+            image=form.image.data,
+            category_id=category_id,
+            brand_id=brand_id  # 分配品牌
+        )
         db.session.add(product)
         db.session.commit()
-        flash(_('Your changes have been saved.'))
-        return redirect(url_for('index'))
-    return render_template('set_product.html.j2', title=_('product'),
-                           form=form, user=user)
+        flash(_('Product has been added successfully.'))
+        return redirect(url_for('set_product'))
+    
+    return render_template('set_product.html.j2', title=_('Add Product'), form=form, products=products)
+
+
+
 
 @app.route('/set_brand', methods=['GET', 'POST'])
 @login_required
@@ -309,41 +345,43 @@ def set_orderstatus():
     return render_template('set_orderstatus.html.j2', title=_('orderstatus'),
                            form=form, user=user)
 
-@app.route('/set_cart', methods=['GET', 'POST'])
-@login_required
-def set_cart():
-    form = CartForm()
-    if form.validate_on_submit():
-        cart_item = Cart(user_id=form.user_id.data, product_id=form.product_id.data, quantity=form.quantity.data)
-        db.session.add(cart_item)
-        db.session.commit()
-        flash(_('Your changes have been saved.'))
-        return redirect(url_for('index'))
-    return render_template('set_cart.html.j2', title=_('Set Cart'), form=form)
+##@app.route('/set_cart', methods=['GET', 'POST'])
+##@login_required
+##def set_cart():
+##    form = CartForm()
+##    if form.validate_on_submit():
+##        cart_item = Cart(user_id=form.user_id.data, product_id=form.product_id.data, quantity=form.quantity.data)
+##        db.session.add(cart_item)
+##        db.session.commit()
+##        flash(_('Your changes have been saved.'))
+##        return redirect(url_for('index'))
+##    return render_template('set_cart.html.j2', title=_('Set Cart'), form=form)
 
 @app.route('/set_coupon', methods=['GET', 'POST'])
 @login_required
 def set_coupon():
+    if current_user.username != "Admin":
+        abort(403)  # 只有 Admin 可以設置優惠券
+    
     form = CouponForm()
     if form.validate_on_submit():
-        coupon = Coupon(code=form.code.data, discount_percentage=form.discount_percentage.data, expiration_date=form.expiration_date.data)
+        coupon = Coupon(code=form.code.data,
+                        discount_percentage=form.discount_percentage.data,
+                        expiration_date=form.expiration_date.data)
         db.session.add(coupon)
         db.session.commit()
-        flash(_('Your coupon has been created.'))
+        flash(_('Coupon has been created.'))
         return redirect(url_for('index'))
+    
     return render_template('set_coupon.html.j2', title=_('Set Coupon'), form=form)
 
-@app.route('/set_customer_order', methods=['GET', 'POST'])
+
+@app.route('/orders', methods=['GET'])
 @login_required
-def set_customer_order():
-    form = CustomerOrderForm()
-    if form.validate_on_submit():
-        order = CustomerOrder(date=form.date.data, user_id=form.user_id.data, cost=form.cost.data)
-        db.session.add(order)
-        db.session.commit()
-        flash(_('Your order has been created.'))
-        return redirect(url_for('index'))
-    return render_template('set_customer_order.html.j2', title=_('Set Customer Order'), form=form)
+def view_orders():
+    user_orders = CustomerOrder.query.filter_by(user_id=current_user.id).order_by(CustomerOrder.date.desc()).all()
+    return render_template('orders.html.j2', orders=user_orders)
+
 
 @app.route('/set_cookie')
 def set_cookie():
@@ -382,4 +420,217 @@ def remove_address(address_id):
     db.session.commit()
     flash('address has been removed.')
     return redirect(('index')) 
+
+@app.route('/set_cart', methods=['GET'])
+@login_required
+def view_cart():
+    cart_items = Cart.query.filter_by(user_id=current_user.id).all()
+    total_price = sum(item.product.price * item.quantity for item in cart_items)
+    return render_template('/cart.html.j2', cart_items=cart_items, total_price=total_price)
+
+@app.route('/set_cart/update/<int:item_id>', methods=['POST'])
+@login_required
+def update_cart(item_id):
+    item = Cart.query.get_or_404(item_id)
+    if item.user_id != current_user.id:
+        abort(403)
+    
+    form = CartForm()
+    if form.validate_on_submit():
+        item.quantity = form.quantity.data
+        db.session.commit()
+        flash(_('Cart updated!'))
+    
+    return redirect(url_for('view_cart'))
+
+@app.route('/set_cart/remove/<int:item_id>', methods=['GET'])
+@login_required
+def remove_cart_item(item_id):
+    item = Cart.query.get_or_404(item_id)
+    if item.user_id != current_user.id:
+        abort(403)
+    
+    db.session.delete(item)
+    db.session.commit()
+    flash(_('Item removed from cart'))
+    return redirect(url_for('view_cart'))
+
+@app.route('/coupons', methods=['GET'])
+@login_required
+def view_coupons():
+    user_coupons = Coupon.query.all()  # 移除 user_id，改為查詢所有優惠券
+    return render_template('coupons.html.j2', coupons=user_coupons)
+
+@app.route('/set_cart/add/<int:product_id>', methods=['POST'])
+@login_required
+def set_cart(product_id):
+    product = Product.query.get_or_404(product_id)
+    # 檢查該產品是否已存在於購物車
+    existing_cart_item = Cart.query.filter_by(user_id=current_user.id, product_id=product_id).first()
+    if existing_cart_item:
+        # 如果產品已在購物車中，增加數量
+        existing_cart_item.quantity += 1
+    else:
+        # 如果是新產品，添加到購物車
+        cart_item = Cart(user_id=current_user.id, product_id=product.id, quantity=1)
+        db.session.add(cart_item)
+    db.session.commit()
+    flash(_('Product added to your cart!'))
+    return redirect(url_for('view_cart'))
+
+@app.route('/checkout', methods=['POST'])
+@login_required
+def checkout():
+    # 獲取當前用戶的購物車項目
+    cart_items = Cart.query.filter_by(user_id=current_user.id).all()
+    total_price = sum(item.product.price * item.quantity for item in cart_items)
+
+    if not cart_items:
+        flash(_('Your cart is empty.'))
+        return redirect(url_for('view_cart'))
+
+    # 創建新訂單
+    new_order = CustomerOrder(
+        user_id=current_user.id,
+        cost=total_price,  # 訂單總價
+        date=datetime.utcnow(),  # 訂單日期
+        status='Completed'  # 訂單狀態設置為已完成
+    )
+    db.session.add(new_order)
+
+    # 添加訂單中的商品至 `OrderDetails`
+    for item in cart_items:
+        order_detail = OrderDetails(
+            order=new_order,  # 關聯到訂單
+            product_id=item.product_id,
+            quantity=item.quantity,
+            price=item.product.price
+        )
+        db.session.add(order_detail)
+
+    # 清空購物車
+    for item in cart_items:
+        db.session.delete(item)
+    db.session.commit()
+
+    flash(_('Payment successful! Your order has been created.'))
+    return redirect(url_for('view_orders'))  # 跳轉至訂單頁面
+
+@app.route('/categories', methods=['GET'])
+@login_required
+def view_categories():
+    categories = Category.query.all()  # 查詢所有類別
+    return render_template('categories.html.j2', categories=categories)
+
+@app.route('/category/<int:category_id>', methods=['GET'])
+@login_required
+def view_category_products(category_id):
+    category = Category.query.get_or_404(category_id)  # 查找類別
+    products = Product.query.filter_by(category_id=category_id).all()  # 獲取該類別的產品
+    return render_template('category_products.html.j2', category=category, products=products)
+
+@app.route('/admin/categories', methods=['GET'])
+@login_required
+def admin_categories():
+    categories = Category.query.all()
+    return render_template('admin_categories.html.j2', categories=categories)
+
+
+
+@app.route('/admin/category/delete/<int:category_id>', methods=['POST'])
+@login_required
+def delete_category(category_id):
+    category = Category.query.get_or_404(category_id)
+    db.session.delete(category)
+    db.session.commit()
+    flash(_('Category has been deleted.'))
+    return redirect(url_for('admin_categories'))
+
+@app.route('/product/edit/<int:product_id>', methods=['GET', 'POST'])
+@login_required
+def edit_product(product_id):
+    product = Product.query.get_or_404(product_id)  # 查詢要編輯的產品
+    form = ProductForm(obj=product)  # 填充表單初始值為產品信息
+    form.category.choices = [(c.id, c.name) for c in Category.query.all()]  # 填充類別選項
+
+    if form.validate_on_submit():
+        product.name = form.name.data
+        product.description = form.description.data
+        product.price = form.price.data
+        product.image = form.image.data
+        product.category_id = form.category.data
+        db.session.commit()
+        flash(_('Product has been updated successfully.'))
+        return redirect(url_for('set_product'))
+    
+    return render_template('set_product.html.j2', title=_('Edit Product'), form=form)
+
+@app.route('/product/delete/<int:product_id>', methods=['POST'])
+@login_required
+def delete_product(product_id):
+    product = Product.query.get_or_404(product_id)
+    db.session.delete(product)  # 直接刪除產品
+    db.session.commit()  # 自動刪除與該產品相關聯的 OrderDetails 記錄
+    flash(_('Product and related records have been deleted successfully.'))
+    return redirect(url_for('set_product'))
+
+@app.route('/brands', methods=['GET'])
+def view_brands():
+    brands = Brand.query.all()  # 查詢所有品牌
+    return render_template('brands.html.j2', brands=brands)
+
+@app.route('/brand/<int:brand_id>', methods=['GET'])
+def view_brand_products(brand_id):
+    brand = Brand.query.get_or_404(brand_id)  # 查詢品牌
+    products = Product.query.filter_by(brand_id=brand_id).all()  # 查詢品牌下的所有產品
+    return render_template('brand_products.html.j2', brand=brand, products=products)
+
+@app.route('/category/edit/<int:category_id>', methods=['GET', 'POST'])
+@login_required
+def edit_category(category_id):
+    category = Category.query.get_or_404(category_id)  # 查詢要編輯的類別
+    form = CategoryForm(obj=category)  # 填充表單初始值
+
+    if form.validate_on_submit():
+        category.name = form.name.data
+        category.description = form.description.data
+        db.session.commit()  # 保存修改
+        flash(_('Category has been updated successfully.'))
+        return redirect(url_for('view_categories'))  # 返回類別列表頁面
+
+    return render_template('edit_category.html.j2', title=_('Edit Category'), form=form, category=category)
+
+@app.route('/brand/edit/<int:brand_id>', methods=['GET', 'POST'])
+@login_required
+def edit_brand(brand_id):
+    brand = Brand.query.get_or_404(brand_id)  # 查詢品牌
+    form = BrandForm(obj=brand)  # 初始化表單數據
+    
+    if form.validate_on_submit():  # 確認表單已成功提交
+        brand.name = form.name.data
+        brand.description = form.description.data
+        db.session.commit()  # 保存更新到數據庫
+        flash(_('Brand has been updated successfully.'))
+        return redirect(url_for('view_brands'))  # 返回品牌列表頁面
+
+    return render_template('edit_brand.html.j2', title=_('Edit Brand'), form=form, brand=brand)
+
+@app.route('/brand/delete/<int:brand_id>', methods=['POST'])
+@login_required
+def delete_brand(brand_id):
+    brand = Brand.query.get_or_404(brand_id)
+
+    # 如果品牌下有關聯的產品，提示無法直接刪除
+    if brand.products.count() > 0:
+        flash(_('You cannot delete this brand because it is associated with products.'))
+        return redirect(url_for('view_brands'))
+    
+    db.session.delete(brand)
+    db.session.commit()
+    flash(_('Brand has been deleted successfully.'))
+    return redirect(url_for('view_brands'))
+
+
+
+
 

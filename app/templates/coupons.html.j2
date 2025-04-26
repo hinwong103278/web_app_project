@@ -1,0 +1,26 @@
+{% extends "base.html.j2" %}
+{% block app_content %}
+    <h1>{{ _('Your Coupons') }}</h1>
+    {% if coupons %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>{{ _('Coupon Code') }}</th>
+                    <th>{{ _('Discount') }}</th>
+                    <th>{{ _('Expiration Date') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for coupon in coupons %}
+                    <tr>
+                        <td>{{ coupon.code }}</td>
+                        <td>{{ coupon.discount_percentage }}%</td>
+                        <td>{{ coupon.expiration_date.strftime('%Y-%m-%d') }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>{{ _('No coupons available.') }}</p>
+    {% endif %}
+{% endblock %}

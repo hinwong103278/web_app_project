@@ -1,0 +1,49 @@
+{% extends "base.html.j2" %}
+
+{% block app_content %}
+<div class="container my-5">
+    <h1 class="mb-4 text-primary">{{ _('Manage Categories') }}</h1>
+    
+    {% if categories %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="thead-light">
+                    <tr>
+                        <th>{{ _('Category Name') }}</th>
+                        <th>{{ _('Description') }}</th>
+                        {% if current_user.username == "Admin"%}
+                        <th>{{ _('Actions') }}</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in categories %}
+                        <tr>
+                            <td>{{ category.name }}</td>
+                            <td>{{ category.description }}</td>
+                            {% if current_user.username == "Admin"%}
+                            <td>
+                                <!-- 編輯按鈕 -->
+                                <a href="{{ url_for('edit_category', category_id=category.id) }}" class="btn btn-warning btn-sm">
+                                    {{ _('Edit') }}
+                                </a>
+                                <!-- 刪除按鈕 -->
+                                <form method="POST" action="{{ url_for('delete_category', category_id=category.id) }}" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('{{ _('Are you sure you want to delete this category?') }}')">
+                                        {{ _('Delete') }}
+                                    </button>
+                                </form>
+                            {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            {{ _('No categories available. Start by adding one above.') }}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

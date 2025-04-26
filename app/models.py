@@ -102,12 +102,15 @@ class Payment(db.Model):
     
 class CustomerOrder(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.DateTime, default=datetime.utcnow)
-    items = db.relationship('Product', backref='author', lazy='dynamic')
-    Details = db.relationship('OrderDetails', backref='author', lazy='dynamic')
-    status = db.relationship('OrderStatus', backref='author', lazy='dynamic')
-    cost = db.Column(db.Float(9))
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    cost = db.Column(db.Float, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    
+    products = db.relationship('OrderDetails', backref='order', lazy=True)  # 讓訂單擁有多個商品
+    status = db.Column(db.String(20), default='Pending')  # 訂單狀態：Pending, Completed, Canceled
+
+    def __repr__(self):
+        return f'<Order {self.id}, User {self.user_id}, Status: {self.status}>'
 
 class ShippingAddresses(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -129,10 +132,10 @@ class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(140))
     description = db.Column(db.String(140))
-    price = db.Column(db.Float)
-    image = db.Column(db.String(200))
+    price = db.Column(db.Float(9))
+    image = db.Column(db.String(500))
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
-    brand_id = db.Column(db.Integer, db.ForeignKey('brand.id'))
+    brand_id = db.Column(db.Integer, db.ForeignKey('brand.id'))  # 添加品牌外鍵
     reviews = db.relationship('ProductReview', backref='product', lazy='dynamic')
     order_id = db.Column(db.Integer, db.ForeignKey('customer_order.id'))
     Cart_items = db.relationship('Cart', backref='author', lazy='dynamic')
@@ -151,11 +154,11 @@ class Category(db.Model):
     
 class Brand(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(140))
-    description = db.Column(db.String(140))
-    products = db.relationship('Product', backref='brand', lazy='dynamic')
+    name = db.Column(db.String(140), unique=True, nullable=False)
+    description = db.Column(db.String(200), nullable=True)
+    products = db.relationship('Product', backref='brand', lazy='dynamic')  # 與產品關聯
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return f'<Brand {self.name}>'
 
 class ProductReview(db.Model):
@@ -170,12 +173,17 @@ class ProductReview(db.Model):
     
 class OrderDetails(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    order_id = db.Column(db.Integer, db.ForeignKey('customer_order.id'))
-    product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
-    quantity = db.Column(db.Integer)
+    order_id = db.Column(db.Integer, db.ForeignKey('customer_order.id', ondelete='CASCADE'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id', ondelete='CASCADE'), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    price = db.Column(db.Float, nullable=False)
 
-    def __repr__(self) -> str:
-        return f'<OrderDetails {self.id}>'
+    product = db.relationship('Product')  # 用於獲取產品的詳細信息
+
+    def __repr__(self):
+        return f'<OrderDetails Order {self.order_id}, Product {self.product_id}, Quantity {self.quantity}>'
+
+
     
 class OrderStatus(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -187,12 +195,18 @@ class OrderStatus(db.Model):
     
 class Cart(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
-    quantity = db.Column(db.Integer, default=1)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False, default=1)
+    
+    user = db.relationship('User', backref='cart_items', lazy=True)
+    product = db.relationship('Product', backref='cart_items', lazy=True)
+    
+    def total_price(self):
+        return self.product.price * self.quantity
 
-    def __repr__(self) -> str:
-        return f'<Cart {self.id}>'
+    def __repr__(self):
+        return f'<Cart User: {self.user_id}, Product: {self.product_id}, Quantity: {self.quantity}>'
     
 class Coupon(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -200,5 +214,7 @@ class Coupon(db.Model):
     discount_percentage = db.Column(db.Float, nullable=False)
     expiration_date = db.Column(db.DateTime, nullable=False)
 
-    def __repr__(self) -> str:
-        return f'<Coupon {self.code}>'
+    def __repr__(self):
+        return f'<Coupon {self.code}, Discount: {self.discount_percentage}%>'
+
+
