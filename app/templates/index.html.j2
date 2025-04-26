@@ -50,48 +50,6 @@
 
     <h1>{{ _('Hi, %(username)s!', username=current_user.username) }}</h1>
 
-    {% if form %}
-
-        {{ wtf.quick_form(form) }}
-
-        <br/>
-
-    {% endif %}
-
-    {% for post in posts %}
-
-        {% include "_post.html.j2" %}
-
-    {% endfor %}
-
-    <nav aria-label="...">
-
-        <ul class="pager">
-
-            <li class="previous{% if not prev_url %} disabled{% endif %}">
-
-                <a href="{{ prev_url or '#' }}">
-
-                    <span aria-hidden="true">&larr;</span> {{ _('Newer posts') }}
-
-                </a>
-
-            </li>
-
-            <li class="next{% if not next_url %} disabled{% endif %}">
-
-                <a href="{{ next_url or '#' }}">
-
-                    {{ _('Older posts') }} <span aria-hidden="true">&rarr;</span>
-
-                </a>
-
-            </li>
-
-        </ul>
-
-    </nav>
-
           <!-- 新增產品展示區塊 -->
     <h2>{{ _('Products') }}</h2>
     <div class="row">
@@ -104,8 +62,14 @@
                         <p class="card-text">{{ product.description }}</p>
                         <p class="card-text"><strong>{{ _('Price:') }} {{ product.price }} 元</strong></p>
                         <div class="d-flex gap-2">
+                            <li>
                             <form method="POST" action="{{ url_for('set_cart', product_id=product.id) }}" style="display: inline;">
                                 <button type="submit" class="btn btn-primary">{{ _('Add to Cart') }}</button>
+                            </form></li>
+                            <li>
+                            <form method="POST" action="{{ url_for('add_wishlist', product_id=product.id) }}" style="display: inline;">
+                                <button type="submit" class="btn btn-primary">{{ _('Add to wishlist') }}</button>
+                            </li>
                             </form>
                         </div>
                     </div>

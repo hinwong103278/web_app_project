@@ -8,7 +8,7 @@ from app.forms import LoginForm, RegistrationForm, EditProfileForm, PostForm, \
     ResetPasswordRequestForm, ResetPasswordForm, PaymentForm, ShippingAddressesForm, \
     UserAddressForm, ProductForm, BrandForm, CategoryForm, ProductReviewForm, \
     OrderDetailsForm, OrderStatusForm, CartForm, CouponForm, CustomerOrderForm
-from app.models import User, Post, Payment, ShippingAddresses, Product, Brand, Category, ProductReview, OrderDetails, OrderStatus, CustomerOrder, Coupon, Cart
+from app.models import User, Post, Payment, ShippingAddresses, Product, Brand, Category, ProductReview, OrderDetails, OrderStatus, CustomerOrder, Coupon, Cart, Wishlist
 from app.email import send_password_reset_email
 
 
@@ -24,13 +24,6 @@ def before_request():
 @app.route('/index', methods=['GET', 'POST'])
 @login_required
 def index():
-    form = PostForm()
-    if form.validate_on_submit():
-        post = Post(body=form.post.data, author=current_user)
-        db.session.add(post)
-        db.session.commit()
-        flash(_('Your post is now live!'))
-        return redirect(url_for('index'))
     products = Product.query.all()  # 查詢所有產品
     page = request.args.get('page', 1, type=int)
     posts = current_user.followed_posts().paginate(
@@ -41,14 +34,21 @@ def index():
         'index', page=posts.prev_num) if posts.prev_num else None
     payment = Payment.query.all()
     address = ShippingAddresses.query.all()
-    return render_template('index.html.j2', title=_('Home'), form=form,
+    return render_template('index.html.j2', title=_('Home'),
                            posts=posts.items, next_url=next_url,
                            prev_url=prev_url, payment=payment, address=address, products=products)
 
 
-@app.route('/explore')
+@app.route('/explore', methods=['GET', 'POST'])
 @login_required
 def explore():
+    form = PostForm()
+    if form.validate_on_submit():
+        post = Post(body=form.post.data, author=current_user)
+        db.session.add(post)
+        db.session.commit()
+        flash(_('Your post is now live!'))
+        return redirect(url_for('explore'))
     page = request.args.get('page', 1, type=int)
     posts = Post.query.order_by(Post.timestamp.desc()).paginate(
         page=page, per_page=app.config["POSTS_PER_PAGE"], error_out=False)
@@ -56,9 +56,9 @@ def explore():
         'explore', page=posts.next_num) if posts.next_num else None
     prev_url = url_for(
         'explore', page=posts.prev_num) if posts.prev_num else None
-    return render_template('index.html.j2', title=_('Explore'),
+    return render_template('explore.html.j2', title=_('Explore'),
                            posts=posts.items, next_url=next_url,
-                           prev_url=prev_url)
+                           prev_url=prev_url, form=form)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -631,6 +631,31 @@ def delete_brand(brand_id):
     return redirect(url_for('view_brands'))
 
 
+@app.route('/wishlist/add/<int:product_id>', methods=['POST'])
+@login_required
+def add_wishlist(product_id):
+    product = Product.query.get_or_404(product_id)
+    wishlist_item = Wishlist.query.filter_by(user_id=current_user.id, product_id=product_id).first()
+    if wishlist_item:
+        flash(_('this product is already in your wishlist'))
+    else:
+        wishlist_item = Wishlist(user_id=current_user.id, product_id=product.id)
+        db.session.add(wishlist_item)
+    db.session.commit()
+    flash(_('Product added to your cart!'))
+    return redirect(url_for('view_wishlist'))
 
+@app.route('/view_wishlist', methods=['GET'])
+@login_required
+def view_wishlist():
+    wishlist_items = Wishlist.query.filter_by(user_id=current_user.id).all()
+    return render_template('/wishlist.html.j2', title=_('view_Wishlist'), wishlist_items=wishlist_items)
 
-
+@app.route('/wishlist/remove/<int:item_id>', methods=['GET'])
+@login_required
+def remove_wishlist_item(item_id):
+    wishlist_item = Wishlist.query.get_or_404(item_id)
+    db.session.delete(wishlist_item)
+    db.session.commit()
+    flash(_('Item removed from wishlist'))
+    return redirect(url_for('view_wishlist'))

@@ -121,9 +121,9 @@ class ShippingAddresses(db.Model):
 
 class Wishlist(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    wishitem =  db.Column(db.String(140))
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    Product = db.relationship('Product', backref='wishlist_items', lazy=True)
 
     def __repr__(self) -> str:
         return f'<Wishlist {self.wishitem}>'
@@ -139,6 +139,7 @@ class Product(db.Model):
     reviews = db.relationship('ProductReview', backref='product', lazy='dynamic')
     order_id = db.Column(db.Integer, db.ForeignKey('customer_order.id'))
     Cart_items = db.relationship('Cart', backref='author', lazy='dynamic')
+    wish_item = db.relationship('Wishlist', backref='rela_product', lazy='dynamic')
 
     def __repr__(self) -> str:
         return f'<Product {self.name}>'

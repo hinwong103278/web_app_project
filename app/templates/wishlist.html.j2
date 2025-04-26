@@ -1,0 +1,33 @@
+{% extends "base.html.j2" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% block app_content %}
+    <h1>{{ _('Your wishlist') }}</h1>
+    {% if wishlist_items %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>{{ _('Product') }}</th>
+                    <th>{{ _('images') }}</th>
+                    <th>{{ _('Price') }}</th>
+                    <th>{{ _('Actions') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in wishlist_items %}
+                    <tr>
+                        <td>{{ item.Product.name }}</td>
+                        <td><img src="{{ item.Product.image }}" alt="Product Image" width="150"></td>
+                        <td>{{ item.Product.price }}</td>
+                        <td>
+                            <a href="{{ url_for('remove_wishlist_item', item_id=item.id) }}" class="btn btn-danger">
+                                {{ _('Remove') }}
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>{{ _('Your wishlist is empty.') }}</p>
+    {% endif %}
+{% endblock %}
