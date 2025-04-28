@@ -45,31 +45,40 @@
         }
     </style>
 {% endblock %}
-
 {% block app_content %}
-
     <h1>{{ _('Hi, %(username)s!', username=current_user.username) }}</h1>
-
-          <!-- 新增產品展示區塊 -->
+    <!-- 新增產品展示區塊 -->
     <h2>{{ _('Products') }}</h2>
     <div class="row">
         {% for product in products %}
             <div class="col-md-4">
                 <div class="card mb-4 shadow-sm">
-                    <img src="{{ product.image }}" class="card-img-top" alt="{{ product.name }}" style="width: 100%; height: 200px; object-fit: cover;">
+                    <img src="{{ product.image }}"
+                         class="card-img-top"
+                         alt="{{ product.name }}"
+                         style="width: 100%;
+                                height: 200px;
+                                object-fit: cover">
                     <div class="card-body">
                         <h5 class="card-title">{{ product.name }}</h5>
                         <p class="card-text">{{ product.description }}</p>
-                        <p class="card-text"><strong>{{ _('Price:') }} {{ product.price }} 元</strong></p>
+                        <p class="card-text">
+                            <strong>{{ _('Price:') }} {{ product.price }} 元</strong>
+                        </p>
                         <div class="d-flex gap-2">
                             <li>
-                            <form method="POST" action="{{ url_for('set_cart', product_id=product.id) }}" style="display: inline;">
-                                <button type="submit" class="btn btn-primary">{{ _('Add to Cart') }}</button>
-                            </form></li>
-                            <li>
-                            <form method="POST" action="{{ url_for('add_wishlist', product_id=product.id) }}" style="display: inline;">
-                                <button type="submit" class="btn btn-primary">{{ _('Add to wishlist') }}</button>
+                                <form method="POST"
+                                      action="{{ url_for('set_cart', product_id=product.id) }}"
+                                      style="display: inline">
+                                    <button type="submit" class="btn btn-primary">{{ _('Add to Cart') }}</button>
+                                </form>
                             </li>
+                            <li>
+                                <form method="POST"
+                                      action="{{ url_for('add_wishlist', product_id=product.id) }}"
+                                      style="display: inline">
+                                    <button type="submit" class="btn btn-primary">{{ _('Add to wishlist') }}</button>
+                                </li>
                             </form>
                         </div>
                     </div>
@@ -77,89 +86,57 @@
             </div>
         {% endfor %}
     </div>
-
-    <div style="background-color: rgb(32, 55, 129); width: 100%; text-align: center; position: fixed; left: 0; bottom: 0;">
-
-    {% block setting %}
-
-        {% if current_user.username == "Admin"%}
-
-            <li>
-
-                <a href="{{ url_for('set_payment') }}">{{ _('setpayment') }}</a>
-
-            </li>
-
-            <li>
-
-                <a href="{{ url_for('shippingAddress') }}">{{ _('setshippingAddress') }}</a>
-
-            </li>
-
-            <li>
-
-                <a href="{{ url_for('set_product') }}">{{ _('Product') }}</a>
-
-            </li>
-
-            <li>
-
-                <a href="{{ url_for('set_category') }}">{{ _('Category') }}</a>
-
-            </li>
-
-            <li>
-
-                <a href="{{ url_for('set_brand') }}">{{ _('Brand') }}</a>
-
-            </li>
-            <li>
-
-                <a href="{{ url_for('set_coupon') }}">{{ _('coupon to user') }}</a>
-
-            </li>
-            <li>
-
-                <a href="{{ url_for('set_category') }}">{{ _('set category') }}</a>
-
-            </li>
-
-        {% else %}
-
-            {% if payment %}
-
-             <ul>
-
-                {% for p in payment %}
-
-                    <img src="{{ p.logo }}" alt="Payment Image" width="150">
-
-                {% endfor %}
-
-            </ul>
-
-            {% if address %}
-
-                <ul>
-
-                    {% for s in address %}
-
-                        <span style="color: white;">our shippingAddress: {{ s.address }}</span>
-
-                    {% endfor %}
-
+    <div style="background-color: rgb(32, 55, 129);
+                width: 100%;
+                text-align: center;
+                position: fixed;
+                left: 0;
+                bottom: 0">
+        {% block setting %}
+            {% if current_user.username == "Admin" %}
+                <li>
+                    <a href="{{ url_for('set_payment') }}">{{ _('setpayment') }}</a>
+                </li>
+                <li>
+                    <a href="{{ url_for('shippingAddress') }}">{{ _('setshippingAddress') }}</a>
+                </li>
+                <li>
+                    <a href="{{ url_for('set_product') }}">{{ _('Product') }}</a>
+                </li>
+                <li>
+                    <a href="{{ url_for('set_category') }}">{{ _('Category') }}</a>
+                </li>
+                <li>
+                    <a href="{{ url_for('set_brand') }}">{{ _('Brand') }}</a>
+                </li>
+                <li>
+                    <a href="{{ url_for('set_coupon') }}">{{ _('coupon to user') }}</a>
+                </li>
+                <li>
+                    <a href="{{ url_for('set_category') }}">{{ _('set category') }}</a>
+                </li>
+                <li>
+                    <a href="{{ url_for('view_product_reviews') }}">{{ _('Product Review') }}</a>
+                </li>
+                <li>
+                    <a href="{{ url_for('set_orderstatus_order') }}">{{ _('Order Status') }}</a>
+                </li>
+                <li>
+                    <a href="{{ url_for('view_returns') }}">{{ _('returns') }}</a>
+                </li>
+            {% else %}
+                {% if payment %}
+                    <ul>
+                        {% for p in payment %}<img src="{{ p.logo }}" alt="Payment Image" width="150">{% endfor %}
+                    </ul>
+                    {% if address %}
+                        <ul>
+                            {% for s in address %}<span style="color: white;">our shippingAddress: {{ s.address }}</span>{% endfor %}
+                        </ul>
+                    {% endif %}
                 </ul>
-
             {% endif %}
-
-            </ul>
-
-            {% endif %}
-
         {% endif %}
-
     {% endblock %}
-
-    </div>
-
+</div>
 {% endblock %}

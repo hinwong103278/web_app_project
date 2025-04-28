@@ -188,8 +188,12 @@ class OrderDetails(db.Model):
     
 class OrderStatus(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    status = db.Column(db.String(140))
-    order_id = db.Column(db.Integer, db.ForeignKey('customer_order.id'))
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)  # 关联产品
+    product = db.relationship('Product', backref='order_statuses')  # 建立关系
+    order_id = db.Column(db.Integer, db.ForeignKey('customer_order.id'), nullable=True)
+    status = db.Column(db.String(64), nullable=False, default='Pending')  # 设置默认值
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
 
     def __repr__(self) -> str:
         return f'<OrderStatus {self.status}>'
@@ -218,4 +222,13 @@ class Coupon(db.Model):
     def __repr__(self):
         return f'<Coupon {self.code}, Discount: {self.discount_percentage}%>'
 
+class Returns(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('customer_order.id'), nullable=False)
+    reason = db.Column(db.String(200), nullable=False)
+    status = db.Column(db.String(50), default='Pending')  # Pending, Approved, Rejected
+    request_date = db.Column(db.DateTime, default=datetime.utcnow)
+    order = db.relationship('CustomerOrder', backref='returns', lazy=True)
 
+    def __repr__(self):
+        return f'<Returns Order {self.order_id}, Status {self.status}>'

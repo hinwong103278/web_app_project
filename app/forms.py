@@ -2,9 +2,9 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, \
     TextAreaField, IntegerField, SelectField, DecimalField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, \
-    Length
+    Length, NumberRange
 from flask_babel import _, lazy_gettext as _l
-from app.models import User
+from app.models import User, CustomerOrder, Product
 
 
 class LoginForm(FlaskForm):
@@ -106,9 +106,11 @@ class BrandForm(FlaskForm):
     submit = SubmitField(_l('View Brand'))
 
 class ProductReviewForm(FlaskForm):
-    text = TextAreaField(_l('Write your review'), validators=[DataRequired(), Length(max=500)])
-    Rating = SelectField(_l('Rating'), choices=[(5, '5'), (4, '4'), (3, '3'), (2, '2'), (1, '1')], coerce=int, validators=[DataRequired()])
-    submit = SubmitField(_l('Submit Review'))
+    name = StringField('Review Title', validators=[DataRequired()])  # 評論名稱
+    content = TextAreaField('Review Content', validators=[DataRequired()])  # 評論內容
+    rating = IntegerField('Rating', validators=[DataRequired(), NumberRange(min=1, max=5)])  # 評分 (1-5)
+    product_id = SelectField('Product', coerce=int, validators=[DataRequired()])  # 關聯產品
+    submit = SubmitField('Submit Review')
 
 class OrderDetailsForm(FlaskForm):
     id = StringField(_l('Order ID'), validators=[DataRequired()])
@@ -117,9 +119,28 @@ class OrderDetailsForm(FlaskForm):
     submit = SubmitField(_l('Confirm Order'))
     
 class OrderStatusForm(FlaskForm):
-    id = StringField(_l('Order ID'), validators=[DataRequired()])
-    status = SelectField(_l('Status'), choices=[('Pending', 'Pending'), ('Shipped', 'Shipped'), ('Delivered', 'Delivered')], validators=[DataRequired()])
+    status = SelectField(
+        _l('Order Status'),
+        choices=[('Pending', 'Pending'), ('Shipped', 'Shipped'), ('Delivering', 'Delivering')],
+        validators=[DataRequired()]
+    )
+    product_id = SelectField(
+        _l('Product'),
+        coerce=int,
+        validators=[DataRequired()]
+    )  # 选择产品
+    order_id = SelectField(
+        _l('Order'),
+        coerce=int,
+        validators=[DataRequired()]
+    )  # 选择订单
     submit = SubmitField(_l('Update Status'))
+
+    def __init__(self, *args, **kwargs):
+        super(OrderStatusForm, self).__init__(*args, **kwargs)
+        self.product_id.choices = [(p.id, p.name) for p in Product.query.all()]
+        self.order_id.choices = [(o.id, f"Order #{o.id}") for o in CustomerOrder.query.all()]
+
 
 class CartForm(FlaskForm):
     user_id = IntegerField(_l('User ID'), validators=[DataRequired()])
@@ -138,3 +159,16 @@ class CustomerOrderForm(FlaskForm):
     user_id = IntegerField(_l('User ID'), validators=[DataRequired()])
     cost = IntegerField(_l('Total Cost'), validators=[DataRequired()])
     submit = SubmitField(_l('Place Order'))
+
+class ReturnsForm(FlaskForm):
+    order_id = SelectField(
+        _l('Order ID'),
+        coerce=int,
+        validators=[DataRequired()]
+    )
+    reason = TextAreaField(_l('Reason for Return'), validators=[DataRequired()])
+    submit = SubmitField(_l('Submit Return'))
+
+    def __init__(self, *args, **kwargs):
+        super(ReturnsForm, self).__init__(*args, **kwargs)
+        self.order_id.choices = [(order.id, f"Order #{order.id}") for order in CustomerOrder.query.all()]

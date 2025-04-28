@@ -7,8 +7,8 @@ from app import app, db
 from app.forms import LoginForm, RegistrationForm, EditProfileForm, PostForm, \
     ResetPasswordRequestForm, ResetPasswordForm, PaymentForm, ShippingAddressesForm, \
     UserAddressForm, ProductForm, BrandForm, CategoryForm, ProductReviewForm, \
-    OrderDetailsForm, OrderStatusForm, CartForm, CouponForm, CustomerOrderForm
-from app.models import User, Post, Payment, ShippingAddresses, Product, Brand, Category, ProductReview, OrderDetails, OrderStatus, CustomerOrder, Coupon, Cart, Wishlist
+    OrderDetailsForm, OrderStatusForm, CartForm, CouponForm, CustomerOrderForm, ReturnsForm
+from app.models import User, Post, Payment, ShippingAddresses, Product, Brand, Category, ProductReview, OrderDetails, OrderStatus, CustomerOrder, Coupon, Cart, Wishlist, Returns
 from app.email import send_password_reset_email
 
 
@@ -278,8 +278,6 @@ def set_product():
     return render_template('set_product.html.j2', title=_('Add Product'), form=form, products=products)
 
 
-
-
 @app.route('/set_brand', methods=['GET', 'POST'])
 @login_required
 def set_brand():
@@ -332,18 +330,18 @@ def set_orderdetails():
     return render_template('set_orderdetails.html.j2', title=_('orderdetails'),
                            form=form, user=user)
 
-@app.route('/set_orderstatus', methods=['GET', 'POST'])
-@login_required
-def set_orderstatus():
-    form = OrderStatusForm()
-    if form.validate_on_submit():
-        orderstatus = OrderStatus(name=form.name.data)
-        db.session.add(orderstatus)
-        db.session.commit()
-        flash(_('Your changes have been saved.'))
-        return redirect(url_for('index'))
-    return render_template('set_orderstatus.html.j2', title=_('orderstatus'),
-                           form=form, user=user)
+##@app.route('/set_orderstatus', methods=['GET', 'POST'])
+##@login_required
+##def set_orderstatus():
+    ##form = OrderStatusForm()
+    ##if form.validate_on_submit():
+        ##orderstatus = OrderStatus(name=form.name.data)
+        ##db.session.add(orderstatus)
+        ##db.session.commit()
+        ##flash(_('Your changes have been saved.'))
+        ##return redirect(url_for('index'))
+    ##return render_template('set_orderstatus.html.j2', title=_('orderstatus'),
+                           ##form=form, user=user)
 
 ##@app.route('/set_cart', methods=['GET', 'POST'])
 ##@login_required
@@ -659,3 +657,184 @@ def remove_wishlist_item(item_id):
     db.session.commit()
     flash(_('Item removed from wishlist'))
     return redirect(url_for('view_wishlist'))
+
+@app.route('/product_reviews', methods=['GET'])
+@login_required
+def view_product_reviews():
+    """查看所有產品評論"""
+    product_reviews = ProductReview.query.all()  # 查詢所有評論
+    return render_template('product_reviews.html.j2', title=_('Product Reviews'), product_reviews=product_reviews)
+
+@app.route('/product_review/add', methods=['GET', 'POST'])
+@login_required
+def add_product_review():
+    """新增產品評論"""
+    form = ProductReviewForm()
+    form.product_id.choices = [(p.id, p.name) for p in Product.query.all()]
+    if form.validate_on_submit():
+        review = ProductReview(
+            product_id=form.product_id.data,
+            user_id=current_user.id,
+            content=form.content.data,
+            rating=form.rating.data
+        )
+        db.session.add(review)
+        db.session.commit()
+        flash(_('Your review has been added successfully.'))
+        return redirect(url_for('view_product', product_id=form.product_id.data))
+    return render_template('add_review.html.j2', title=_('Add Product Review'), form=form)
+
+@app.route('/product_review/edit/<int:review_id>', methods=['GET', 'POST'])
+@login_required
+def edit_product_review(review_id):
+    """編輯產品評論"""
+    review = ProductReview.query.get_or_404(review_id)
+    form = ProductReviewForm(obj=review)
+    if form.validate_on_submit():
+        review.content = form.content.data
+        review.rating = form.rating.data
+        db.session.commit()
+        flash(_('Review has been updated successfully.'))
+        return redirect(url_for('product_reviews'))
+    return render_template('edit_product_review.html.j2', title=_('Edit Review'), form=form, review=review)
+
+@app.route('/product_review/delete/<int:review_id>', methods=['POST'])
+@login_required
+def delete_product_review(review_id):
+    """刪除產品評論"""
+    review = ProductReview.query.get_or_404(review_id)
+    db.session.delete(review)
+    db.session.commit()
+    flash(_('Review has been deleted successfully.'))
+    return redirect(url_for('product_reviews'))
+
+@app.route('/set_orderstatus', methods=['GET', 'POST'], endpoint='set_orderstatus_order')
+@login_required
+def set_orderstatus():
+    """新增或更新訂單狀態"""
+    form = OrderStatusForm()
+    form.product_id.choices = [(p.id, p.name) for p in Product.query.all()]  # 填充产品选项
+    form.order_id.choices = [(order.id, f"Order #{order.id}") for order in CustomerOrder.query.all()]  # 填充订单选项
+
+    if form.validate_on_submit():
+        order_status = OrderStatus(
+            status=form.status.data,  # 确保从表单获取 status 值
+            product_id=form.product_id.data,  # 保存产品 ID
+            order_id=form.order_id.data,
+            timestamp=datetime.utcnow()
+        )
+        db.session.add(order_status)
+        db.session.commit()
+        flash(_('Order status has been added successfully.'))
+        return redirect(url_for('view_order_status'))
+    return render_template('set_orderstatus.html.j2', title=_('Set Order Status'), form=form)
+
+@app.route('/order_status/add', methods=['GET', 'POST'])
+@login_required
+def add_order_status():
+    """新增訂單狀態"""
+    form = OrderStatusForm()
+    form.product_id.choices = [(p.id, p.name) for p in Product.query.all()]  # 填充产品选项
+    form.order_id.choices = [(order.id, f"Order #{order.id}") for order in CustomerOrder.query.all()]  # 填充订单选项
+
+    if form.validate_on_submit():
+        order_status = OrderStatus(
+            product_id=form.product_id.data,
+            order_id=form.order_id.data
+        )
+        db.session.add(order_status)
+        db.session.commit()
+        flash(_('Order status has been added successfully.'))
+        return redirect(url_for('view_order_status'))
+    return render_template('add_order_status.html.j2', title=_('Add Order Status'), form=form)
+
+@app.route('/order_status/edit/<int:status_id>', methods=['GET', 'POST'])
+@login_required
+def edit_order_status(status_id):
+    """編輯訂單狀態"""
+    order_status = OrderStatus.query.get_or_404(status_id)
+    form = OrderStatusForm(obj=order_status)  # 使用現有數據初始化表單
+
+    if form.validate_on_submit():
+        # 更新訂單狀態數據
+        order_status.status = form.status.data
+        order_status.product_id = form.product_id.data
+        order_status.order_id = form.order_id.data
+        db.session.commit()
+        flash(_('Order status has been updated successfully.'))
+        return redirect(url_for('view_order_status'))
+
+    return render_template('edit_order_status.html.j2', form=form, order_status=order_status)
+@app.route('/order_status/delete/<int:status_id>', methods=['POST'])
+@login_required
+def delete_order_status(status_id):
+    """刪除訂單狀態"""
+    order_status = OrderStatus.query.get_or_404(status_id)  # 查詢訂單狀態
+    db.session.delete(order_status)
+    db.session.commit()
+    flash(_('Order status has been deleted successfully.'))
+    return redirect(url_for('view_order_status'))
+
+@app.route('/view_order_status', methods=['GET'])
+@login_required
+def view_order_status():
+    """顯示所有訂單狀態"""
+    order_statuses = OrderStatus.query.all()
+    return render_template('view_order_status.html.j2', order_statuses=order_statuses)
+
+@app.route('/returns', methods=['GET'])
+@login_required
+def view_returns():
+    """查看所有退貨記錄"""
+    returns = Returns.query.all()  # 查詢所有退貨記錄
+    return render_template('returns.html.j2', title=_('Returns'), returns=returns)
+
+@app.route('/returns/add', methods=['GET', 'POST'])
+@login_required
+def add_return():
+    """新增退貨記錄"""
+    form = ReturnsForm()
+    form.order_id.choices = [(order.id, f"Order #{order.id}") for order in CustomerOrder.query.all()]
+    if form.validate_on_submit():
+        # 驗證 order_id 是否存在於 customer_order 表中
+        order = CustomerOrder.query.get(form.order_id.data)
+        if not order:
+            flash(_('Invalid Order ID. Please select a valid order.'))
+            return redirect(url_for('add_return'))
+
+        # 創建新的退貨記錄
+        new_return = Returns(
+            order_id=form.order_id.data,
+            reason=form.reason.data,
+            request_date=datetime.utcnow()
+        )
+        db.session.add(new_return)
+        db.session.commit()
+        flash(_('Return request has been submitted successfully.'))
+        return redirect(url_for('view_returns'))
+    return render_template('add_return.html.j2', title=_('Request Return'), form=form)
+
+@app.route('/returns/delete/<int:return_id>', methods=['POST'])
+@login_required
+def delete_return(return_id):
+    """刪除退貨記錄"""
+    return_item = Returns.query.get_or_404(return_id)  # 查詢退貨記錄
+    db.session.delete(return_item)
+    db.session.commit()
+    flash(_('Return record has been deleted successfully.'))
+    return redirect(url_for('view_returns'))
+
+@app.route('/returns/edit/<int:return_id>', methods=['GET', 'POST'])
+@login_required
+def edit_return(return_id):
+    """編輯退貨記錄"""
+    return_item = Returns.query.get_or_404(return_id)
+    form = ReturnsForm(obj=return_item)
+    form.order_id.choices = [(order.id, f"Order #{order.id}") for order in CustomerOrder.query.all()]
+    if form.validate_on_submit():
+        return_item.order_id = form.order_id.data
+        return_item.reason = form.reason.data
+        db.session.commit()
+        flash(_('Return record has been updated successfully.'))
+        return redirect(url_for('view_returns'))
+    return render_template('edit_return.html.j2', title=_('Edit Return'), form=form, return_item=return_item)
