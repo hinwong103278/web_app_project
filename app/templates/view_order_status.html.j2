@@ -13,7 +13,9 @@
                         <th>{{ _('Order ID') }}</th>
                         <th>{{ _('Timestamp') }}</th>
                         <th>{{ _('Status') }}</th>
+                        {% if current_user.username == "Admin" %}
                         <th>{{ _('Actions') }}</th>
+                        {% endif %}
                     </tr>
                 </thead>
                 <tbody>
@@ -31,6 +33,7 @@
                                 {{ status.status }}
                             </span>
                         </td>
+                        {% if current_user.username == "Admin" %}
                         <td>
                             <a href="{{ url_for('edit_order_status', status_id=status.id) }}" class="btn btn-sm btn-info">
                                 {{ _('Edit') }}
@@ -41,6 +44,7 @@
                                 </button>
                             </form>
                         </td>
+                        {% endif %}
                     </tr>
                     {% endfor %}
                 </tbody>
