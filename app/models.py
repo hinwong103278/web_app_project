@@ -164,14 +164,17 @@ class Brand(db.Model):
 
 class ProductReview(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100))
-    rating = db.Column(db.Integer)
-    comment = db.Column(db.String(500))
-    product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    name = db.Column(db.String(128), nullable=False)  # 評論名稱
+    content = db.Column(db.Text, nullable=False)  # 評論內容
+    rating = db.Column(db.Integer, nullable=False)  # 評分
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)  # 關聯產品
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)  # 評論時間
+
+    # 修改 backref 名稱，避免與 product 屬性衝突
+    prorew = db.relationship('Product', backref='product_reviews')  # 與產品的關聯
 
     def __repr__(self) -> str:
-        return f'<ProductReview {self.comment}>'
+        return f'<ProductReview {self.name}, Rating {self.rating}>'
     
 class OrderDetails(db.Model):
     id = db.Column(db.Integer, primary_key=True)

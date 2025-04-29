@@ -304,18 +304,18 @@ def set_category():
     return render_template('set_category.html.j2', title=_('category'),
                            form=form, user=user)
 
-@app.route('/set_productReview', methods=['GET', 'POST'])
-@login_required
-def set_productReview():
-    form = ProductReviewForm()
-    if form.validate_on_submit():
-        productReview = ProductReview(name=form.name.data)
-        db.session.add(productReview)
-        db.session.commit()
-        flash(_('Your changes have been saved.'))
-        return redirect(url_for('index'))
-    return render_template('set_producteview.html.j2', title=_('productReview'),
-                           form=form, user=user)
+##@app.route('/set_productReview', methods=['GET', 'POST'])
+##@login_required
+##def set_productReview():
+    ##form = ProductReviewForm()
+    ##if form.validate_on_submit():
+        ##productReview = ProductReview(name=form.name.data)
+        ##db.session.add(productReview)
+        ##db.session.commit()
+        ##flash(_('Your changes have been saved.'))
+        ##return redirect(url_for('index'))
+    ##return render_template('set_producteview.html.j2', title=_('productReview'),
+                           ##form=form, user=user)
 
 @app.route('/set_orderdetails', methods=['GET', 'POST'])
 @login_required
@@ -670,43 +670,50 @@ def view_product_reviews():
 def add_product_review():
     """新增產品評論"""
     form = ProductReviewForm()
+    # 填充產品選項
     form.product_id.choices = [(p.id, p.name) for p in Product.query.all()]
     if form.validate_on_submit():
-        review = ProductReview(
-            product_id=form.product_id.data,
-            user_id=current_user.id,
+        # 創建新的評論
+        product_review = ProductReview(
+            name=form.name.data,
             content=form.content.data,
-            rating=form.rating.data
+            rating=form.rating.data,
+            product_id=form.product_id.data
         )
-        db.session.add(review)
+        db.session.add(product_review)
         db.session.commit()
-        flash(_('Your review has been added successfully.'))
-        return redirect(url_for('view_product', product_id=form.product_id.data))
+        flash(_('Product review has been added successfully.'))
+        return redirect(url_for('view_product_reviews'))
     return render_template('add_review.html.j2', title=_('Add Product Review'), form=form)
 
 @app.route('/product_review/edit/<int:review_id>', methods=['GET', 'POST'])
 @login_required
 def edit_product_review(review_id):
     """編輯產品評論"""
-    review = ProductReview.query.get_or_404(review_id)
-    form = ProductReviewForm(obj=review)
+    product_review = ProductReview.query.get_or_404(review_id)  # 查詢評論
+    form = ProductReviewForm(obj=product_review)
+    # 填充產品選項
+    form.product_id.choices = [(p.id, p.name) for p in Product.query.all()]
     if form.validate_on_submit():
-        review.content = form.content.data
-        review.rating = form.rating.data
+        # 更新評論內容
+        product_review.name = form.name.data
+        product_review.content = form.content.data
+        product_review.rating = form.rating.data
+        product_review.product_id = form.product_id.data
         db.session.commit()
-        flash(_('Review has been updated successfully.'))
-        return redirect(url_for('product_reviews'))
-    return render_template('edit_product_review.html.j2', title=_('Edit Review'), form=form, review=review)
+        flash(_('Product review has been updated successfully.'))
+        return redirect(url_for('view_product_reviews'))
+    return render_template('edit_review.html.j2', title=_('Edit Product Review'), form=form, product_review=product_review)
 
 @app.route('/product_review/delete/<int:review_id>', methods=['POST'])
 @login_required
 def delete_product_review(review_id):
     """刪除產品評論"""
-    review = ProductReview.query.get_or_404(review_id)
-    db.session.delete(review)
+    product_review = ProductReview.query.get_or_404(review_id)  # 查詢評論
+    db.session.delete(product_review)
     db.session.commit()
-    flash(_('Review has been deleted successfully.'))
-    return redirect(url_for('product_reviews'))
+    flash(_('Product review has been deleted successfully.'))
+    return redirect(url_for('view_product_reviews'))
 
 ##@app.route('/product/<int:product_id>', methods=['GET'])
 ##def view_product(product_id):
