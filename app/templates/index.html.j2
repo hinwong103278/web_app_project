@@ -122,47 +122,25 @@
                 <a href="{{ url_for('set_coupon') }}">{{ _('coupon to user') }}</a>
 
             </li>
-
                 <li>
                     <a href="{{ url_for('view_returns') }}">{{ _('returns') }}</a>
                 </li>
-
         {% else %}
-
             {% if payment %}
-
-             <ul>
-
-                {% for p in payment %}
-
-                    <img src="{{ p.logo }}" alt="Payment Image" width="150">
-
-                {% endfor %}
-
-            </ul>
-
-            {% if address %}
-
                 <ul>
-
-                    {% for s in address %}
-
-                        <span style="color: white;">our shippingAddress: {{ s.address }}</span>
-
+                    {% for p in payment %}
+                        <img src="{{ p.logo }}" alt="Payment Image" width="150">
                     {% endfor %}
-
                 </ul>
-
             {% endif %}
-
-            </ul>
-
+            {% if address %}
+                <ul>
+                    {% for s in address %}
+                        <span style="color: white;">our shippingAddress: {{ s.address }}</span>
+                    {% endfor %}
+                </ul>
             {% endif %}
-
         {% endif %}
-
     {% endblock %}
-
     </div>
-
 {% endblock %}
