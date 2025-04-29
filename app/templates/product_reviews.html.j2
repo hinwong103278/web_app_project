@@ -1,0 +1,39 @@
+{% extends "base.html.j2" %}
+{% block content %}
+    <h1>{{ _('Product Reviews') }}</h1>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>{{ _('Product Name') }}</th>
+                <th>{{ _('Review Content') }}</th>
+                <th>{{ _('Rating') }}</th>
+                <th>{{ _('Timestamp') }}</th>
+                {% if current_user.username == "Admin"%}
+                <th>{{ _('Actions') }}</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for review in product_reviews %}
+                <tr>
+                    <td>{{ review.product.name }}</td>
+                    <td>{{ review.content }}</td>
+                    <td>{{ review.rating }}</td>
+                    <td>{{ review.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    {% if current_user.username == "Admin"%}
+                    <td>
+                        <a href="{{ url_for('edit_product_review', review_id=review.id) }}"
+                           class="btn btn-primary btn-sm">{{ _('Edit') }}</a>
+                        <form action="{{ url_for('delete_product_review', review_id=review.id) }}" method="POST" style="display:inline;">
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('{{ _('Are you sure you want to delete this review?') }}')">
+                                {{ _('Delete') }}
+                            </button>
+                        </form>
+                    </td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{{ url_for('add_product_review') }}" class="btn btn-success">{{ _('Add Review') }}</a>
+{% endblock %}

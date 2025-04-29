@@ -17,10 +17,6 @@
                     {{ form.name(class="form-control", id="name", placeholder=_('Enter product name')) }}
                 </div>
                 <div class="form-group">
-                    <label for="description">{{ form.description.label }}</label>
-                    {{ form.description(class="form-control", id="description", placeholder=_('Enter product description')) }}
-                </div>
-                <div class="form-group">
                     <label for="price">{{ form.price.label }}</label>
                     {{ form.price(class="form-control", id="price", placeholder=_('Enter product price')) }}
                 </div>
@@ -34,17 +30,9 @@
                     <small class="form-text text-muted">{{ _('Select an existing category or leave empty to create a new one.') }}</small>
                 </div>
                 <div class="form-group">
-                    <label for="new_category">{{ form.new_category.label }}</label>
-                    {{ form.new_category(class="form-control", id="new_category", placeholder=_('Enter new category name')) }}
-                </div>
-                <div class="form-group">
                     <label for="brand">{{ form.brand.label }}</label>
                     {{ form.brand(class="form-control", id="brand") }}
                     <small class="form-text text-muted">{{ _('Select an existing brand or leave empty to create a new one.') }}</small>
-                </div>
-                <div class="form-group">
-                    <label for="new_brand">{{ form.new_brand.label }}</label>
-                    {{ form.new_brand(class="form-control", id="new_brand", placeholder=_('Enter new brand name')) }}
                 </div>
                 <button type="submit" class="btn btn-primary btn-block">{{ _('Save Product') }}</button>
             </form>

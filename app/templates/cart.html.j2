@@ -17,9 +17,7 @@
                     <tr>
                         <td>{{ item.product.name }}</td>
                         <td>
-                            <form method="post" action="{{ url_for('update_cart', item_id=item.id) }}">
-                                <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="form-control">
-                                <button type="submit" class="btn btn-primary mt-2">{{ _('Update') }}</button>
+                                <p>{{ item.quantity }}</p>
                             </form>
                         </td>
                         <td>${{ item.total_price() }}</td>

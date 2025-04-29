@@ -7,8 +7,8 @@ from app import app, db
 from app.forms import LoginForm, RegistrationForm, EditProfileForm, PostForm, \
     ResetPasswordRequestForm, ResetPasswordForm, PaymentForm, ShippingAddressesForm, \
     UserAddressForm, ProductForm, BrandForm, CategoryForm, ProductReviewForm, \
-    OrderDetailsForm, OrderStatusForm, CartForm, CouponForm, CustomerOrderForm
-from app.models import User, Post, Payment, ShippingAddresses, Product, Brand, Category, ProductReview, OrderDetails, OrderStatus, CustomerOrder, Coupon, Cart, Wishlist
+    OrderDetailsForm, OrderStatusForm, CartForm, CouponForm, CustomerOrderForm, ReturnsForm
+from app.models import User, Post, Payment, ShippingAddresses, Product, Brand, Category, ProductReview, OrderDetails, OrderStatus, CustomerOrder, Coupon, Cart, Wishlist, Returns
 from app.email import send_password_reset_email
 
 
@@ -236,48 +236,39 @@ def shippingAddress():
 @login_required
 def set_product():
     form = ProductForm()
+    # 填充類別選項
     form.category.choices = [(c.id, c.name) for c in Category.query.all()]
-    form.brand.choices = [(b.id, b.name) for b in Brand.query.all()]  # 填充品牌選項
+    # 填充品牌選項
+    form.brand.choices = [(b.id, b.name) for b in Brand.query.all()]
 
-    products = Product.query.all()
+    products = Product.query.all()  # 獲取現有產品列表
     if form.validate_on_submit():
-        # 處理類別
-        category_id = None
-        if form.new_category.data:
-            new_category = Category(name=form.new_category.data)
-            db.session.add(new_category)
-            db.session.commit()
-            category_id = new_category.id
-        elif form.category.data:
-            category_id = form.category.data
+        # 驗證是否存在相同名稱的產品以避免重複
+        existing_product = Product.query.filter_by(name=form.name.data).first()
 
-        # 處理品牌
-        brand_id = None
-        if form.new_brand.data:
-            new_brand = Brand(name=form.new_brand.data, description=None)
-            db.session.add(new_brand)
-            db.session.commit()
-            brand_id = new_brand.id
-        elif form.brand.data:
-            brand_id = form.brand.data
+        if existing_product:
+            # 如果產品已存在，更新其屬性
+            existing_product.price = form.price.data
+            existing_product.image = form.image.data
+            existing_product.category_id = form.category.data
+            existing_product.brand_id = form.brand.data
+            flash(_('Product already exists. Details have been updated.'))
+        else:
+            # 如果產品不存在，創建新產品
+            new_product = Product(
+                name=form.name.data,
+                price=form.price.data,
+                image=form.image.data,
+                category_id=form.category.data,
+                brand_id=form.brand.data
+            )
+            db.session.add(new_product)
+            flash(_('Product has been added successfully.'))
 
-        # 創建產品
-        product = Product(
-            name=form.name.data,
-            description=form.description.data,
-            price=form.price.data,
-            image=form.image.data,
-            category_id=category_id,
-            brand_id=brand_id  # 分配品牌
-        )
-        db.session.add(product)
-        db.session.commit()
-        flash(_('Product has been added successfully.'))
+        db.session.commit()  # 保存數據庫更改
         return redirect(url_for('set_product'))
-    
+
     return render_template('set_product.html.j2', title=_('Add Product'), form=form, products=products)
-
-
 
 
 @app.route('/set_brand', methods=['GET', 'POST'])
@@ -306,18 +297,6 @@ def set_category():
     return render_template('set_category.html.j2', title=_('category'),
                            form=form, user=user)
 
-@app.route('/set_productReview', methods=['GET', 'POST'])
-@login_required
-def set_productReview():
-    form = ProductReviewForm()
-    if form.validate_on_submit():
-        productReview = ProductReview(name=form.name.data)
-        db.session.add(productReview)
-        db.session.commit()
-        flash(_('Your changes have been saved.'))
-        return redirect(url_for('index'))
-    return render_template('set_producteview.html.j2', title=_('productReview'),
-                           form=form, user=user)
 
 @app.route('/set_orderdetails', methods=['GET', 'POST'])
 @login_required
@@ -332,18 +311,6 @@ def set_orderdetails():
     return render_template('set_orderdetails.html.j2', title=_('orderdetails'),
                            form=form, user=user)
 
-@app.route('/set_orderstatus', methods=['GET', 'POST'])
-@login_required
-def set_orderstatus():
-    form = OrderStatusForm()
-    if form.validate_on_submit():
-        orderstatus = OrderStatus(name=form.name.data)
-        db.session.add(orderstatus)
-        db.session.commit()
-        flash(_('Your changes have been saved.'))
-        return redirect(url_for('index'))
-    return render_template('set_orderstatus.html.j2', title=_('orderstatus'),
-                           form=form, user=user)
 
 ##@app.route('/set_cart', methods=['GET', 'POST'])
 ##@login_required
@@ -523,11 +490,11 @@ def view_categories():
     return render_template('categories.html.j2', categories=categories)
 
 @app.route('/category/<int:category_id>', methods=['GET'])
-@login_required
 def view_category_products(category_id):
-    category = Category.query.get_or_404(category_id)  # 查找類別
-    products = Product.query.filter_by(category_id=category_id).all()  # 獲取該類別的產品
+    category = Category.query.get_or_404(category_id)  # 查詢指定類別
+    products = Product.query.filter_by(category_id=category_id).all()  # 過濾該類別的產品
     return render_template('category_products.html.j2', category=category, products=products)
+
 
 @app.route('/admin/categories', methods=['GET'])
 @login_required
@@ -549,30 +516,43 @@ def delete_category(category_id):
 @app.route('/product/edit/<int:product_id>', methods=['GET', 'POST'])
 @login_required
 def edit_product(product_id):
-    product = Product.query.get_or_404(product_id)  # 查詢要編輯的產品
-    form = ProductForm(obj=product)  # 填充表單初始值為產品信息
-    form.category.choices = [(c.id, c.name) for c in Category.query.all()]  # 填充類別選項
+    product = Product.query.get_or_404(product_id)  # 獲取現有產品
+    form = ProductForm(obj=product)  # 將現有產品的數據填充到表單
+
+    # 填充類別和品牌選項
+    form.category.choices = [(c.id, c.name) for c in Category.query.all()]
+    form.brand.choices = [(b.id, b.name) for b in Brand.query.all()]
 
     if form.validate_on_submit():
+        # 更新產品的屬性
         product.name = form.name.data
-        product.description = form.description.data
         product.price = form.price.data
         product.image = form.image.data
         product.category_id = form.category.data
-        db.session.commit()
+        product.brand_id = form.brand.data
+        db.session.commit()  # 保存更新
         flash(_('Product has been updated successfully.'))
         return redirect(url_for('set_product'))
-    
+
     return render_template('set_product.html.j2', title=_('Edit Product'), form=form)
+
+
 
 @app.route('/product/delete/<int:product_id>', methods=['POST'])
 @login_required
 def delete_product(product_id):
     product = Product.query.get_or_404(product_id)
-    db.session.delete(product)  # 直接刪除產品
-    db.session.commit()  # 自動刪除與該產品相關聯的 OrderDetails 記錄
-    flash(_('Product and related records have been deleted successfully.'))
+
+    # 處理與該產品相關的購物車記錄
+    carts = Cart.query.filter_by(product_id=product.id).all()
+    for cart in carts:
+        db.session.delete(cart)  # 或者設置其他產品的占位值
+
+    db.session.delete(product)  # 刪除產品
+    db.session.commit()
+    flash(_('Product and related cart items have been deleted.'))
     return redirect(url_for('set_product'))
+
 
 @app.route('/brands', methods=['GET'])
 def view_brands():
@@ -593,7 +573,6 @@ def edit_category(category_id):
 
     if form.validate_on_submit():
         category.name = form.name.data
-        category.description = form.description.data
         db.session.commit()  # 保存修改
         flash(_('Category has been updated successfully.'))
         return redirect(url_for('view_categories'))  # 返回類別列表頁面
@@ -608,7 +587,6 @@ def edit_brand(brand_id):
     
     if form.validate_on_submit():  # 確認表單已成功提交
         brand.name = form.name.data
-        brand.description = form.description.data
         db.session.commit()  # 保存更新到數據庫
         flash(_('Brand has been updated successfully.'))
         return redirect(url_for('view_brands'))  # 返回品牌列表頁面
@@ -659,3 +637,117 @@ def remove_wishlist_item(item_id):
     db.session.commit()
     flash(_('Item removed from wishlist'))
     return redirect(url_for('view_wishlist'))
+
+@app.route('/returns', methods=['GET'])
+@login_required
+def view_returns():
+    """查看所有退貨記錄"""
+    returns = Returns.query.all()  # 查詢所有退貨記錄
+    return render_template('returns.html.j2', title=_('Returns'), returns=returns)
+
+@app.route('/returns/add', methods=['GET', 'POST'])
+@login_required
+def add_return():
+    """新增退貨記錄"""
+    form = ReturnsForm()
+    form.order_id.choices = [(order.id, f"Order #{order.id}") for order in CustomerOrder.query.all()]
+    if form.validate_on_submit():
+        # 驗證 order_id 是否存在於 customer_order 表中
+        order = CustomerOrder.query.get(form.order_id.data)
+        if not order:
+            flash(_('Invalid Order ID. Please select a valid order.'))
+            return redirect(url_for('add_return'))
+
+        # 創建新的退貨記錄
+        new_return = Returns(
+            order_id=form.order_id.data,
+            reason=form.reason.data,
+            request_date=datetime.utcnow()
+        )
+        db.session.add(new_return)
+        db.session.commit()
+        flash(_('Return request has been submitted successfully.'))
+        return redirect(url_for('view_returns'))
+    return render_template('add_return.html.j2', title=_('Request Return'), form=form)
+
+@app.route('/returns/delete/<int:return_id>', methods=['POST'])
+@login_required
+def delete_return(return_id):
+    """刪除退貨記錄"""
+    return_item = Returns.query.get_or_404(return_id)  # 查詢退貨記錄
+    db.session.delete(return_item)
+    db.session.commit()
+    flash(_('Return record has been deleted successfully.'))
+    return redirect(url_for('view_returns'))
+
+@app.route('/returns/edit/<int:return_id>', methods=['GET', 'POST'])
+@login_required
+def edit_return(return_id):
+    """編輯退貨記錄"""
+    return_item = Returns.query.get_or_404(return_id)
+    form = ReturnsForm(obj=return_item)
+    form.order_id.choices = [(order.id, f"Order #{order.id}") for order in CustomerOrder.query.all()]
+    if form.validate_on_submit():
+        return_item.order_id = form.order_id.data
+        return_item.reason = form.reason.data
+        db.session.commit()
+        flash(_('Return record has been updated successfully.'))
+        return redirect(url_for('view_returns'))
+    return render_template('edit_return.html.j2', title=_('Edit Return'), form=form, return_item=return_item)
+
+@app.route('/product_reviews', methods=['GET', 'POST'])
+@login_required
+def view_product_reviews():
+    """查看所有產品評論"""
+    product_reviews = ProductReview.query.all()  # 查詢所有評論
+    return render_template('product_reviews.html.j2', title=_('Product Reviews'), product_reviews=product_reviews)
+
+@app.route('/product_review/add', methods=['GET', 'POST'])
+@login_required
+def add_product_review():
+    """新增產品評論"""
+    form = ProductReviewForm()
+    # 填充產品選項
+    form.product_id.choices = [(p.id, p.name) for p in Product.query.all()]
+    if form.validate_on_submit():
+        # 創建新的評論
+        product_review = ProductReview(
+            name=form.name.data,
+            content=form.content.data,
+            rating=form.rating.data,
+            product_id=form.product_id.data
+        )
+        db.session.add(product_review)
+        db.session.commit()
+        flash(_('Product review has been added successfully.'))
+        return redirect(url_for('view_product_reviews'))
+    return render_template('add_review.html.j2', title=_('Add Product Review'), form=form)
+
+@app.route('/product_review/edit/<int:review_id>', methods=['GET', 'POST'])
+@login_required
+def edit_product_review(review_id):
+    """編輯產品評論"""
+    product_review = ProductReview.query.get_or_404(review_id)  # 查詢評論
+    form = ProductReviewForm(obj=product_review)
+    # 填充產品選項
+    form.product_id.choices = [(p.id, p.name) for p in Product.query.all()]
+    if form.validate_on_submit():
+        # 更新評論內容
+        product_review.name = form.name.data
+        product_review.content = form.content.data
+        product_review.rating = form.rating.data
+        product_review.product_id = form.product_id.data
+        db.session.commit()
+        flash(_('Product review has been updated successfully.'))
+        return redirect(url_for('view_product_reviews'))
+    return render_template('edit_review.html.j2', title=_('Edit Product Review'), form=form, product_review=product_review)
+
+@app.route('/product_review/delete/<int:review_id>', methods=['POST'])
+@login_required
+def delete_product_review(review_id):
+    """刪除產品評論"""
+    product_review = ProductReview.query.get_or_404(review_id)  # 查詢評論
+    db.session.delete(product_review)
+    db.session.commit()
+    flash(_('Product review has been deleted successfully.'))
+    return redirect(url_for('view_product_reviews'))

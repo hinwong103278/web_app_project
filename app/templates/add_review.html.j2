@@ -1,0 +1,27 @@
+{% extends "base.html.j2" %}
+
+{% block content %}
+<h1>{{ _('Add Product Review') }}</h1>
+
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="form-group">
+        <label for="name">{{ form.name.label }}</label>
+        {{ form.name(class="form-control", id="name") }}
+    </div>
+    <div class="form-group">
+        <label for="content">{{ form.content.label }}</label>
+        {{ form.content(class="form-control", id="content", rows=5) }}
+    </div>
+    <div class="form-group">
+        <label for="rating">{{ form.rating.label }}</label>
+        {{ form.rating(class="form-control", id="rating", min=1, max=5) }}
+    </div>
+    <div class="form-group">
+        <label for="product_id">{{ form.product_id.label }}</label>
+        {{ form.product_id(class="form-control", id="product_id") }}
+    </div>
+    <button type="submit" class="btn btn-success">{{ _('Submit Review') }}</button>
+    <a href="{{ url_for('view_product_reviews') }}" class="btn btn-secondary">{{ _('Cancel') }}</a>
+</form>
+{% endblock %}

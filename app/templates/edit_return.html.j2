@@ -1,0 +1,14 @@
+{% extends "base.html.j2" %}
+{% block app_content %}
+<h1>{{ _('Edit Return') }}</h1>
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="form-group">
+        {{ form.order_id.label }} {{ form.order_id(class="form-control") }}
+    </div>
+    <div class="form-group">
+        {{ form.reason.label }} {{ form.reason(class="form-control") }}
+    </div>
+    <button type="submit" class="btn btn-primary">{{ _('Save Changes') }}</button>
+</form>
+{% endblock %}

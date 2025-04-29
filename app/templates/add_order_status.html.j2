@@ -1,0 +1,22 @@
+{% extends "base.html.j2" %}
+
+{% block content %}
+<h1>{{ _('Add Order Status') }}</h1>
+
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="form-group">
+        <label for="name">{{ form.name.label }}</label>
+        {{ form.name(class="form-control", id="name") }}
+    </div>
+    <div class="form-group">
+        <label for="description">{{ form.description.label }}</label>
+        {{ form.description(class="form-control", id="description") }}
+    </div>
+    <div class="form-group">
+        <label for="order_id">{{ form.order_id.label }}</label>
+        {{ form.order_id(class="form-control", id="order_id") }}
+    </div>
+    <button type="submit" class="btn btn-primary">{{ _('Save') }}</button>
+</form>
+{% endblock %}

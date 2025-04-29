@@ -10,9 +10,9 @@
                 <thead class="thead-light">
                     <tr>
                         <th>{{ _('Category Name') }}</th>
-                        <th>{{ _('Description') }}</th>
-                        {% if current_user.username == "Admin"%}
                         <th>{{ _('Actions') }}</th>
+                        {% if current_user.username == "Admin"%}
+                        <th>{{ _('Admin Controls') }}</th>
                         {% endif %}
                     </tr>
                 </thead>
@@ -20,7 +20,12 @@
                     {% for category in categories %}
                         <tr>
                             <td>{{ category.name }}</td>
-                            <td>{{ category.description }}</td>
+                            <td>
+                                <!-- 新增「View Products」按鈕 -->
+                                <a href="{{ url_for('view_category_products', category_id=category.id) }}" class="btn btn-primary btn-sm">
+                                    {{ _('View Products') }}
+                                </a>
+                            </td>
                             {% if current_user.username == "Admin"%}
                             <td>
                                 <!-- 編輯按鈕 -->
@@ -33,8 +38,8 @@
                                         {{ _('Delete') }}
                                     </button>
                                 </form>
-                            {% endif %}
                             </td>
+                            {% endif %}
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -42,8 +47,7 @@
         </div>
     {% else %}
         <div class="alert alert-info">
-            {{ _('No categories available. Start by adding one above.') }}
-        </div>
+            {{ _('No categories available. Start by adding one above.') }}</div>
     {% endif %}
 </div>
 {% endblock %}

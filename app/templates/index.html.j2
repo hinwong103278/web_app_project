@@ -59,7 +59,6 @@
                     <img src="{{ product.image }}" class="card-img-top" alt="{{ product.name }}" style="width: 100%; height: 200px; object-fit: cover;">
                     <div class="card-body">
                         <h5 class="card-title">{{ product.name }}</h5>
-                        <p class="card-text">{{ product.description }}</p>
                         <p class="card-text"><strong>{{ _('Price:') }} {{ product.price }} 元</strong></p>
                         <div class="d-flex gap-2">
                             <li>
@@ -69,6 +68,11 @@
                             <li>
                             <form method="POST" action="{{ url_for('add_wishlist', product_id=product.id) }}" style="display: inline;">
                                 <button type="submit" class="btn btn-primary">{{ _('Add to wishlist') }}</button>
+                            </li>
+                            </form>
+                            <li>
+                            <form method="GET" action="{{ url_for('view_product_reviews', product_id=product.id) }}" style="display: inline;">
+                                <button type="submit" class="btn btn-primary">{{ _('view product reviews') }}</button>
                             </li>
                             </form>
                         </div>
@@ -118,11 +122,10 @@
                 <a href="{{ url_for('set_coupon') }}">{{ _('coupon to user') }}</a>
 
             </li>
-            <li>
 
-                <a href="{{ url_for('set_category') }}">{{ _('set category') }}</a>
-
-            </li>
+                <li>
+                    <a href="{{ url_for('view_returns') }}">{{ _('returns') }}</a>
+                </li>
 
         {% else %}
 

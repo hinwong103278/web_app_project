@@ -12,10 +12,6 @@
                     <label for="name">{{ form.name.label }}</label>
                     {{ form.name(class="form-control", id="name") }}
                 </div>
-                <div class="form-group">
-                    <label for="description">{{ form.description.label }}</label>
-                    {{ form.description(class="form-control", id="description") }}
-                </div>
                 <button type="submit" class="btn btn-primary">{{ _('Save Changes') }}</button>
                 <a href="{{ url_for('view_categories') }}" class="btn btn-secondary">{{ _('Cancel') }}</a>
             </form>

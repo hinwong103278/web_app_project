@@ -128,6 +128,13 @@
                             </a>
                         </li>
                         <li>
+                            <a href="{{ url_for('add_return') }}">
+                                🛒 {{ _('Return') }}
+                                {% if current_user.cart_items %}
+                                {% endif %}
+                            </a>
+                        </li>
+                        <li>
                             <a href="{{ url_for('logout') }}">{{ _('Logout') }}</a>
                         </li>
                     {% endif %}

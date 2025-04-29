@@ -1,12 +1,10 @@
 {% extends "base.html.j2" %}
 {% block app_content %}
 <h1>{{ _('Manage Categories') }}</h1>
-<a href="{{ url_for('set_category') }}" class="btn btn-success mb-3">{{ _('Add New Category') }}</a>
 <table class="table table-hover">
     <thead>
         <tr>
             <th>{{ _('Category Name') }}</th>
-            <th>{{ _('Description') }}</th>
             <th>{{ _('Actions') }}</th>
         </tr>
     </thead>
@@ -14,7 +12,6 @@
         {% for category in categories %}
             <tr>
                 <td>{{ category.name }}</td>
-                <td>{{ category.description }}</td>
                 <td>
                     <a href="{{ url_for('edit_category', category_id=category.id) }}" class="btn btn-warning btn-sm">
                         {{ _('Edit') }}
