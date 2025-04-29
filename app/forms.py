@@ -53,7 +53,6 @@ class EditProfileForm(FlaskForm):
     about_me = TextAreaField(_l('About me'),
                              validators=[Length(min=0, max=140)])
     useraddress = StringField(_l('Useraddress'), validators=[DataRequired()])
-    cardnumber = StringField(_l('Cardnumber'), validators=[DataRequired()])
     submit = SubmitField(_l('Submit'))
 
     def __init__(self, original_username, *args, **kwargs):
