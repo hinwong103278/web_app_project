@@ -9,7 +9,7 @@
         <ul>
             {% for s in address %}
             <li>
-                <p>our shippingAddress:{{ s.address }}</p>
+                <p>{{ s.address }}</p>
                 <a href="{{ url_for('remove_address', address_id=s.id) }}"><button type="submit">Remove address</button></a>
             </li>
             {% endfor %}  
