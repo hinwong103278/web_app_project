@@ -708,6 +708,11 @@ def delete_product_review(review_id):
     flash(_('Review has been deleted successfully.'))
     return redirect(url_for('product_reviews'))
 
+##@app.route('/product/<int:product_id>', methods=['GET'])
+##def view_product(product_id):
+    ##product = Product.query.get_or_404(product_id)
+    ##return render_template('product_detail.html.j2', product=product)
+
 @app.route('/set_orderstatus', methods=['GET', 'POST'], endpoint='set_orderstatus_order')
 @login_required
 def set_orderstatus():

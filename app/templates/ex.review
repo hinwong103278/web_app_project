@@ -1,0 +1,2 @@
+<a href="{{ url_for('add_product_review') }}" class="btn btn-success">{{ _('Add Review') }}</a>
+at the product_review.html.j2 by the 35 line

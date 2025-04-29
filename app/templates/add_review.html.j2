@@ -3,7 +3,7 @@
 {% block content %}
 <h1>{{ _('Add Product Review') }}</h1>
 
-<form method="POST">
+<form method="POST" action="{{ url_for('add_product_review') }}">
     {{ form.hidden_tag() }}
     <div class="form-group">
         <label for="product_id">{{ form.product_id.label }}</label>
@@ -17,7 +17,6 @@
         <label for="rating">{{ form.rating.label }}</label>
         {{ form.rating(class="form-control", id="rating", min=1, max=5) }}
     </div>
-    <button type="submit" class="btn btn-success">{{ _('Submit Review') }}</button>
-    <a href="{{ url_for('view_product', product_id=form.product_id.data) }}" class="btn btn-secondary">{{ _('Cancel') }}</a>
+    <button type="submit" class="btn btn-primary">{{ _('Submit Review') }}</button>
 </form>
 {% endblock %}
